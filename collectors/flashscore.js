@@ -9,6 +9,8 @@ const HEADERS = {
   'x-fsign': 'SW9D1eZo',
 };
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function searchTeam(teamName) {
   try {
     const resp = await axios.get(SEARCH_API, {
@@ -51,19 +53,6 @@ async function fetchTeamResults(teamId) {
   }
 }
 
-async function fetchMatchStats(flashscoreMatchId) {
-  try {
-    const resp = await axios.get(`${MATCH_API}match_stats_${flashscoreMatchId}`, {
-      headers: HEADERS,
-      timeout: 10000,
-    });
-    return resp.data;
-  } catch (e) {
-    logger.error(`FlashScore 获取比赛统计失败: ${flashscoreMatchId} - ${e.message}`);
-    return null;
-  }
-}
-
 async function fetchH2H(homeTeamId, awayTeamId) {
   try {
     const resp = await axios.get(`${MATCH_API}h2h_${homeTeamId}_${awayTeamId}`, {
@@ -100,11 +89,11 @@ function saveMatchDetails(db, matchId, details) {
 async function fetchMatchDetails(db, matchId, homeTeam, awayTeam) {
   logger.info(`采集 FlashScore 数据: ${homeTeam} vs ${awayTeam}`);
 
-  const [homeResults, awayResults, h2h] = await Promise.all([
-    fetchTeamResults(homeTeam),
-    fetchTeamResults(awayTeam),
-    fetchH2H(homeTeam, awayTeam),
-  ]);
+  const homeResults = await fetchTeamResults(homeTeam);
+  await sleep(1000);
+  const awayResults = await fetchTeamResults(awayTeam);
+  await sleep(1000);
+  const h2h = await fetchH2H(homeTeam, awayTeam);
 
   const details = {
     homeForm: homeResults,
@@ -123,7 +112,6 @@ async function fetchMatchDetails(db, matchId, homeTeam, awayTeam) {
 module.exports = {
   searchTeam,
   fetchTeamResults,
-  fetchMatchStats,
   fetchH2H,
   saveMatchDetails,
   fetchMatchDetails,

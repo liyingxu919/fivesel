@@ -94,6 +94,23 @@ describe('searchTeam', () => {
     expect(results).toHaveLength(1);
     expect(results[0].country).toBe('');
   });
+
+  test('sends correct query params to axios', async () => {
+    axios.get.mockResolvedValue({ data: [] });
+    await searchTeam('TestTeam');
+    expect(axios.get).toHaveBeenCalledWith(
+      'https://s.livesport.services/api/v2/search/',
+      expect.objectContaining({
+        params: {
+          q: 'TestTeam',
+          'lang-id': 13,
+          'type-ids': '1,2,3,4',
+          'project-id': 202,
+          'project-type-id': 1,
+        },
+      })
+    );
+  });
 });
 
 describe('saveMatchDetails', () => {
@@ -207,19 +224,31 @@ describe('fetchMatchDetails', () => {
     expect(row.home_form_json).toBe('null');
   });
 
-  test('calls all three APIs in parallel', async () => {
-    let callOrder = [];
+  test('calls APIs sequentially with >= 1s delay between each', async () => {
+    jest.useFakeTimers();
+
+    const callTimestamps = [];
     axios.get.mockImplementation((url) => {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          callOrder.push(url);
-          resolve({ data: {} });
-        }, 10);
-      });
+      callTimestamps.push(Date.now());
+      return Promise.resolve({ data: {} });
     });
 
-    await fetchMatchDetails(db, 'test001', 'team1', 'team2');
-    expect(callOrder).toHaveLength(3);
+    const promise = fetchMatchDetails(db, 'test001', 'team1', 'team2');
+
+    // First call fires immediately (no sleep before it)
+    await jest.advanceTimersByTimeAsync(0);
+    expect(callTimestamps).toHaveLength(1);
+
+    // After 1s delay, second call fires
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(callTimestamps).toHaveLength(2);
+
+    // After another 1s delay, third call fires
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(callTimestamps).toHaveLength(3);
+
+    await promise;
+    jest.useRealTimers();
   });
 });
 
