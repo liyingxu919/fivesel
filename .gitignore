@@ -1,0 +1,9 @@
+node_modules/
+analyzer/venv/
+__pycache__/
+*.pyc
+*.db
+*.sqlite
+.DS_Store
+.env
+*.log
