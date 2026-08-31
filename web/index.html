@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>竞彩智能分析 · 以小搏大</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <h1>竞彩智能分析</h1>
+    <p class="sub">以小搏大 · 串3串4 · 搏冷博大奖</p>
+  </header>
+
+  <div class="toolbar">
+    <select id="dateSelect"></select>
+    <button class="primary" onclick="refreshData()">刷新数据</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="recommendations">推荐方案</button>
+    <button class="tab" data-tab="matches">全部场次</button>
+    <button class="tab" data-tab="tracking">命中追踪</button>
+  </div>
+
+  <div id="recommendations" class="tab-content active"></div>
+  <div id="matches" class="tab-content"></div>
+  <div id="tracking" class="tab-content"></div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
