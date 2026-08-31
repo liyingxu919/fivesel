@@ -35,28 +35,35 @@ try {
 }
 
 // API 路由
+console.log('Loading API routes...');
+console.log('Current directory:', __dirname);
+console.log('Files in server/routes:', require('fs').readdirSync(path.join(__dirname, 'server/routes')));
+
 try {
   const matchesRouter = require('./server/routes/matches');
   app.use('/api/matches', matchesRouter);
-  console.log('Matches router loaded');
+  console.log('Matches router loaded successfully');
 } catch(e) {
   console.error('Matches router error:', e.message);
+  console.error('Stack:', e.stack);
 }
 
 try {
   const recommendationsRouter = require('./server/routes/recommendations');
   app.use('/api/recommendations', recommendationsRouter);
-  console.log('Recommendations router loaded');
+  console.log('Recommendations router loaded successfully');
 } catch(e) {
   console.error('Recommendations router error:', e.message);
+  console.error('Stack:', e.stack);
 }
 
 try {
   const matchDetailsRouter = require('./server/routes/match_details');
   app.use('/api/match-details', matchDetailsRouter);
-  console.log('Match details router loaded');
+  console.log('Match details router loaded successfully');
 } catch(e) {
   console.error('Match details router error:', e.message);
+  console.error('Stack:', e.stack);
 }
 
 // 启动服务器
