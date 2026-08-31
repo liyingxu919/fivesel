@@ -94,3 +94,47 @@ class EloSystem:
 
     def export_ratings(self):
         return dict(self.ratings)
+
+    def init_from_db(self, db):
+        """
+        从数据库的赔率和排名初始化 Elo 评分
+
+        原理：赔率越低 → 市场认为越强 → Elo 越高
+        """
+        cursor = db.execute('''
+            SELECT m.match_id, m.home_team, m.away_team, m.home_rank, m.away_rank,
+                   o.sp_home, o.sp_away
+            FROM matches m
+            LEFT JOIN odds_snapshots o ON m.match_id = o.match_id
+        ''')
+
+        team_scores = {}  # team -> list of implied strengths
+
+        for row in cursor.fetchall():
+            match_id, home, away, h_rank, a_rank, sp_home, sp_away = row
+
+            # 从赔率推算实力
+            if sp_home and sp_away and sp_home > 1 and sp_away > 1:
+                imp_home = 1.0 / sp_home
+                imp_away = 1.0 / sp_away
+                total = imp_home + imp_away
+                # 归一化为0-1实力值
+                home_strength = imp_home / total
+                away_strength = imp_away / total
+
+                team_scores.setdefault(home, []).append(home_strength)
+                team_scores.setdefault(away, []).append(away_strength)
+
+            # 从排名推算（排名越低越强）
+            if h_rank and h_rank < 99:
+                team_scores.setdefault(home, []).append(max(0.1, 1 - h_rank / 30))
+            if a_rank and a_rank < 99:
+                team_scores.setdefault(away, []).append(max(0.1, 1 - a_rank / 30))
+
+        # 转换为 Elo 评分
+        for team, scores in team_scores.items():
+            avg_strength = sum(scores) / len(scores)
+            # 映射到 Elo: 0.5→1500, 0.7→1700, 0.3→1300
+            elo = 1000 + avg_strength * 1000
+            if team not in self.ratings or self.ratings[team] == self.initial:
+                self.ratings[team] = round(elo)

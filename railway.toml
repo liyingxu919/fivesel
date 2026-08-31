@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node start.js"
+healthcheckPath = "/api/matches"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

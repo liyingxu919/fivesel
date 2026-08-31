@@ -56,7 +56,10 @@ function initDatabase(dbPath = DEFAULT_DB_PATH) {
       sp_goals_5 REAL,
       sp_goals_6 REAL,
       sp_goals_7plus REAL,
-      sp_scores_json TEXT
+      sp_scores_json TEXT,
+      score_odds_json TEXT,
+      goals_odds_json TEXT,
+      half_odds_json TEXT
     );
 
     CREATE TABLE IF NOT EXISTS match_details (

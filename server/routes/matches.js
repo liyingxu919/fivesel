@@ -13,6 +13,7 @@ router.get('/', (req, res) => {
     const matches = db.prepare(`
       SELECT m.*, o.sp_home, o.sp_draw, o.sp_away,
              o.sp_handicap_home, o.sp_handicap_draw, o.sp_handicap_away,
+             o.score_odds_json, o.goals_odds_json, o.half_odds_json,
              p.prob_home, p.prob_draw, p.prob_away,
              p.value_spf_json, p.confidence
       FROM matches m

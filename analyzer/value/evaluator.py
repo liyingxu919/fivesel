@@ -1,5 +1,5 @@
 """价值评估系统"""
-from config import VALUE_THRESHOLD, VALUE_HIGH, VALUE_VERY_HIGH
+from config import VALUE_THRESHOLD, VALUE_HIGH, VALUE_VERY_HIGH, MAX_ODDS_RECOMMEND, MIN_PROB_RECOMMEND
 
 
 def implied_prob(sp):
@@ -60,6 +60,12 @@ def find_value_bets(predictions, odds, min_value=VALUE_THRESHOLD):
 
         imp = implied_prob(sp)
         vs = evaluate_value(model_prob, sp)
+
+        # 过滤不靠谱的推荐
+        if sp > MAX_ODDS_RECOMMEND:
+            continue  # 赔率太高，冷门不推荐
+        if model_prob < MIN_PROB_RECOMMEND:
+            continue  # 模型概率太低，结果不太可能
 
         if vs >= min_value:
             bets.append({

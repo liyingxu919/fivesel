@@ -14,10 +14,19 @@ router.get('/', (req, res) => {
       SELECT * FROM recommendations WHERE rec_date = ? ORDER BY rec_type, total_odds DESC
     `).all(date);
 
-    const parsed = recs.map(r => ({
-      ...r,
-      matches_json: JSON.parse(r.matches_json || '[]'),
-    }));
+    const parsed = recs.map(r => {
+      const legs = JSON.parse(r.matches_json || '[]');
+      const enriched = legs.map(leg => {
+        const match = db.prepare('SELECT home_team, away_team, league_name FROM matches WHERE match_id = ?').get(leg.match_id);
+        return {
+          ...leg,
+          home_team: match ? match.home_team : '',
+          away_team: match ? match.away_team : '',
+          league_name: match ? match.league_name : '',
+        };
+      });
+      return { ...r, matches_json: enriched };
+    });
 
     res.json({ success: true, date, recommendations: parsed });
   } catch (e) {

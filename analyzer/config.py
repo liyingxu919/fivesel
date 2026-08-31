@@ -12,9 +12,11 @@ ELO_K = 32
 ELO_HOME_ADVANTAGE = 100
 
 # 价值评估
-VALUE_THRESHOLD = 1.0     # 正期望阈值
+VALUE_THRESHOLD = 1.15    # 正期望阈值（提高门槛）
 VALUE_HIGH = 1.5          # 高价值阈值
 VALUE_VERY_HIGH = 2.0     # 极高价值阈值
+MAX_ODDS_RECOMMEND = 5.0  # 最高推荐赔率（超过5倍的冷门不推荐）
+MIN_PROB_RECOMMEND = 0.20 # 最低模型概率（低于20%的结果不推荐）
 
 # 串关配置
 DAILY_BUDGET = 20         # 每日投入上限（元）

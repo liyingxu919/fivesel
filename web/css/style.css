@@ -123,6 +123,16 @@ body {
   border-radius: 6px;
   margin-bottom: 6px;
 }
+.leg-id {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(227,179,65,.12);
+  padding: 1px 6px;
+  border-radius: 3px;
+  min-width: 60px;
+  text-align: center;
+}
 .leg-match { font-size: 13px; font-weight: 600; }
 .leg-pick {
   font-size: 12px;
@@ -152,14 +162,26 @@ body {
 }
 .match-teams .team { font-size: 14px; font-weight: 700; }
 .match-teams .vs { color: var(--dim); font-size: 12px; }
+.match-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.match-id {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(227,179,65,.12);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
 .match-league {
   font-size: 11px;
   color: var(--dim);
   background: rgba(255,255,255,.04);
   padding: 2px 10px;
   border-radius: 10px;
-  display: inline-block;
-  margin-bottom: 8px;
 }
 .match-odds {
   display: flex;
@@ -179,6 +201,36 @@ body {
 .odd-sp-win { color: var(--red); }
 .odd-sp-draw { color: var(--gold); }
 .odd-sp-lose { color: var(--green); }
+
+.match-handicap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.handicap-label {
+  color: var(--dim);
+  font-size: 11px;
+  min-width: 60px;
+}
+.handicap-odds {
+  display: flex;
+  gap: 4px;
+}
+.hsp {
+  min-width: 50px;
+  text-align: center;
+  padding: 2px 6px;
+  background: rgba(255,255,255,.04);
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.hsp-home { color: var(--red); }
+.hsp-draw { color: var(--gold); }
+.hsp-away { color: var(--green); }
 
 .value-badge {
   font-size: 10px;
@@ -219,3 +271,314 @@ body {
 .result-won { color: var(--green); }
 .result-lost { color: var(--red); }
 .result-pending { color: var(--dim); }
+
+.click-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 6px;
+  opacity: 0.6;
+}
+.match-card { cursor: pointer; }
+.match-card:hover { border-color: var(--gold); }
+
+.match-details-container {
+  margin: -6px 0 10px 0;
+}
+.match-details {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0 0 10px 10px;
+  padding: 16px;
+}
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.vs-divider {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--dim);
+  padding-top: 40px;
+}
+
+.team-profile {
+  font-size: 13px;
+}
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.profile-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.profile-label {
+  font-size: 11px;
+  color: var(--dim);
+  background: rgba(255,255,255,.05);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.profile-key {
+  color: var(--dim);
+  min-width: 60px;
+}
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+
+.form-badges {
+  display: flex;
+  gap: 3px;
+}
+.form-badge {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.form-w { background: rgba(63,185,80,.2); color: var(--green); }
+.form-d { background: rgba(227,179,65,.2); color: var(--gold); }
+.form-l { background: rgba(248,81,73,.2); color: var(--red); }
+
+.team-info-empty {
+  text-align: center;
+  color: var(--dim);
+  padding: 20px;
+  font-size: 13px;
+}
+.loading {
+  text-align: center;
+  color: var(--dim);
+  padding: 16px;
+}
+
+.extra-odds-container {
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.extra-odds-section {
+  margin-bottom: 6px;
+}
+.extra-odds-title {
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: inline-block;
+  background: rgba(227,179,65,.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.extra-odds-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.extra-odd-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 42px;
+  padding: 3px 5px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.extra-odd-val {
+  font-size: 10px;
+  color: var(--dim);
+  line-height: 1.2;
+}
+.extra-odd-sp {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--blue);
+}
+.extra-odds-toggle {
+  font-size: 11px;
+  color: var(--blue);
+  cursor: pointer;
+  text-align: center;
+  padding: 3px 0;
+  user-select: none;
+}
+.extra-odds-toggle:hover { text-decoration: underline; }
+.extra-odds-more {
+  margin-top: 4px;
+}
+
+/* 赔率分析 */
+.odds-analysis {
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.analysis-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.analysis-item {
+  background: rgba(255,255,255,.03);
+  border-radius: 6px;
+  padding: 10px;
+}
+.analysis-label {
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 6px;
+}
+.prob-bar {
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 24px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.prob-home { background: rgba(248,81,73,.3); color: #fff; display:flex; align-items:center; justify-content:center; }
+.prob-draw { background: rgba(227,179,65,.3); color: #fff; display:flex; align-items:center; justify-content:center; }
+.prob-away { background: rgba(63,185,80,.3); color: #fff; display:flex; align-items:center; justify-content:center; }
+.xg-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.xg-home { color: var(--red); }
+.xg-away { color: var(--green); }
+.xg-sep { color: var(--dim); font-weight: 400; }
+.xg-total { font-size: 12px; color: var(--dim); font-weight: 400; }
+.analysis-sub {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.sub-section {
+  background: rgba(255,255,255,.03);
+  border-radius: 6px;
+  padding: 10px;
+}
+.sub-title {
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 6px;
+}
+.score-probs, .goals-probs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.score-prob, .goal-prob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+  padding: 3px 5px;
+  background: rgba(255,255,255,.04);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--dim);
+}
+.score-prob em, .goal-prob em {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--blue);
+}
+
+/* 球队近期战绩 */
+.team-form-section {
+  margin-top: 12px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.form-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.form-summary {
+  font-size: 12px;
+  color: var(--text);
+  background: rgba(255,255,255,.04);
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.form-match-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  font-size: 12px;
+}
+.form-match-league {
+  color: var(--dim);
+  min-width: 50px;
+  font-size: 11px;
+}
+.form-match-date {
+  color: var(--dim);
+  min-width: 70px;
+  font-size: 11px;
+}
+.form-match-teams {
+  flex: 1;
+  font-weight: 600;
+}
+.form-match-score {
+  font-weight: 800;
+  color: var(--blue);
+  min-width: 40px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+  .vs-divider {
+    padding: 0;
+    justify-content: center;
+  }
+}

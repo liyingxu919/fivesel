@@ -1,4 +1,6 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const logger = require('./utils/logger');
 
 const SEARCH_API = 'https://s.livesport.services/api/v2/search/';
@@ -11,11 +13,32 @@ const HEADERS = {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// 加载中英文队名映射
+const mappingPath = path.join(__dirname, 'team_mapping.json');
+let TEAM_MAPPING = {};
+try {
+  TEAM_MAPPING = JSON.parse(fs.readFileSync(mappingPath, 'utf8'));
+} catch (e) {
+  logger.warn('队名映射文件加载失败，将使用中文名直接搜索');
+}
+
+// 加载球队资料
+const profilesPath = path.join(__dirname, 'team_profiles.json');
+let TEAM_PROFILES = {};
+try {
+  TEAM_PROFILES = JSON.parse(fs.readFileSync(profilesPath, 'utf8'));
+} catch (e) {
+  logger.warn('球队资料文件加载失败');
+}
+
 async function searchTeam(teamName) {
+  // 优先使用英文名映射搜索
+  const englishName = TEAM_MAPPING[teamName] || teamName;
+
   try {
     const resp = await axios.get(SEARCH_API, {
       params: {
-        q: teamName,
+        q: englishName,
         'lang-id': 13,
         'type-ids': '1,2,3,4',
         'project-id': 202,
@@ -35,7 +58,7 @@ async function searchTeam(teamName) {
 
     return teams;
   } catch (e) {
-    logger.error(`FlashScore 搜索队伍失败: ${teamName} - ${e.message}`);
+    logger.error(`FlashScore 搜索队伍失败: ${teamName}(${englishName}) - ${e.message}`);
     return [];
   }
 }
@@ -128,10 +151,45 @@ async function fetchMatchDetails(db, matchId, homeTeam, awayTeam) {
   return details;
 }
 
+/**
+ * 从本地球队资料库生成比赛详情（当FlashScore API不可用时使用）
+ */
+function generateMatchDetailsFromProfiles(db, matchId, homeTeam, awayTeam) {
+  const homeProfile = TEAM_PROFILES[homeTeam];
+  const awayProfile = TEAM_PROFILES[awayTeam];
+
+  if (!homeProfile && !awayProfile) {
+    return null;
+  }
+
+  const details = {
+    homeProfile: homeProfile || null,
+    awayProfile: awayProfile || null,
+    h2h: null,
+  };
+
+  db.prepare(`
+    INSERT INTO match_details (match_id, home_form_json, away_form_json, h2h_json)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(match_id) DO UPDATE SET
+      home_form_json=excluded.home_form_json,
+      away_form_json=excluded.away_form_json
+  `).run(
+    matchId,
+    JSON.stringify(details.homeProfile),
+    JSON.stringify(details.awayProfile),
+    null
+  );
+
+  logger.info(`从本地资料库生成比赛详情: ${matchId}`);
+  return details;
+}
+
 module.exports = {
   searchTeam,
   fetchTeamResults,
   fetchH2H,
   saveMatchDetails,
   fetchMatchDetails,
+  generateMatchDetailsFromProfiles,
 };
