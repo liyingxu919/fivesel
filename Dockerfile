@@ -12,21 +12,20 @@ WORKDIR /app
 # 复制依赖文件
 COPY package.json package-lock.json ./
 
-# 安装所有依赖（包括devDependencies）
+# 安装所有依赖
 RUN npm ci
 
 # 复制项目文件
 COPY . .
 
+# 重新编译原生模块
+RUN npm rebuild better-sqlite3
+
 # 确保data目录存在
-RUN mkdir -p data
+RUN mkdir -p data && chmod 777 data
 
 # 暴露端口
 EXPOSE 3000
 
-# 启动脚本
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
 # 启动
-CMD ["/app/start.sh"]
+CMD ["node", "start.js"]
