@@ -3,33 +3,49 @@
  * 启动Web服务 + 定时数据采集
  */
 console.log('Starting jingcai-football...');
+console.log('Node version:', process.version);
+console.log('CWD:', process.cwd());
+
+const path = require('path');
+console.log('1. path loaded');
+
+const fs = require('fs');
+console.log('2. fs loaded');
+
+// 确保data目录存在
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+console.log('3. data dir ready');
+
+// 启动Web服务
+const express = require('express');
+console.log('4. express loaded');
+
+const cors = require('cors');
+console.log('5. cors loaded');
+
+let matchesRouter, recommendationsRouter, matchDetailsRouter;
 try {
-  const path = require('path');
-  console.log('1. path loaded');
-  const fs = require('fs');
-  console.log('2. fs loaded');
-
-  // 确保data目录存在
-  const dataDir = path.join(__dirname, 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  console.log('3. data dir ready');
-
-  // 启动Web服务
-  const express = require('express');
-  console.log('4. express loaded');
-  const cors = require('cors');
-  console.log('5. cors loaded');
-  const matchesRouter = require('./server/routes/matches');
+  matchesRouter = require('./server/routes/matches');
   console.log('6. matches router loaded');
-  const recommendationsRouter = require('./server/routes/recommendations');
+} catch(e) {
+  console.error('6. matches router ERROR:', e.message);
+}
+
+try {
+  recommendationsRouter = require('./server/routes/recommendations');
   console.log('7. recommendations router loaded');
-  const matchDetailsRouter = require('./server/routes/match_details');
+} catch(e) {
+  console.error('7. recommendations router ERROR:', e.message);
+}
+
+try {
+  matchDetailsRouter = require('./server/routes/match_details');
   console.log('8. match_details router loaded');
 } catch(e) {
-  console.error('LOAD ERROR:', e.message, e.stack);
-  process.exit(1);
+  console.error('8. match_details router ERROR:', e.message);
 }
 
 const app = express();
