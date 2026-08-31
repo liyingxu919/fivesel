@@ -1,6 +1,10 @@
 /**
  * 竞彩足球分析系统 - 统一入口
  */
+console.log('Starting Jingcai Football Analyzer...');
+console.log('Node version:', process.version);
+console.log('Environment PORT:', process.env.PORT);
+
 const express = require('express');
 const path = require('path');
 
@@ -21,7 +25,7 @@ app.get('/api/test', (req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Health check: http://0.0.0.0:${PORT}/health`);
 });
@@ -29,7 +33,25 @@ app.listen(PORT, '0.0.0.0', () => {
 // 保持进程运行
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down...');
-  process.exit(0);
+  server.close(() => {
+    process.exit(0);
+  });
 });
 
-console.log('Jingcai Football Analyzer started');
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down...');
+  server.close(() => {
+    process.exit(0);
+  });
+});
+
+// 错误处理
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled rejection at:', promise, 'reason:', reason);
+});
+
+console.log('Jingcai Football Analyzer started successfully');

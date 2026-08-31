@@ -24,5 +24,9 @@ RUN mkdir -p data
 # 暴露端口
 EXPOSE 3000
 
+# 启动脚本
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # 启动
-CMD ["node", "start.js"]
+CMD ["/app/start.sh"]
