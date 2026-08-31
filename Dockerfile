@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:20
 
 # 安装编译依赖
 RUN apt-get update && apt-get install -y \
@@ -12,8 +12,8 @@ WORKDIR /app
 # 复制依赖文件
 COPY package.json package-lock.json ./
 
-# 安装依赖
-RUN npm ci --production
+# 安装所有依赖（包括devDependencies）
+RUN npm ci
 
 # 复制项目文件
 COPY . .

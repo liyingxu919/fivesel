@@ -2,6 +2,7 @@
  * 竞彩足球分析系统 - 统一入口
  * 启动Web服务 + 定时数据采集
  */
+console.log('Starting jingcai-football...');
 const path = require('path');
 const fs = require('fs');
 
