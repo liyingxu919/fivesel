@@ -34,37 +34,95 @@ try {
   console.error('Database init error:', e.message);
 }
 
-// API 路由
-console.log('Loading API routes...');
-console.log('Current directory:', __dirname);
-console.log('Files in server/routes:', require('fs').readdirSync(path.join(__dirname, 'server/routes')));
+// API 路由 - inline to avoid require issues
+const Database = require('better-sqlite3');
+const DB_PATH = path.join(__dirname, 'data/jingcai.db');
 
-try {
-  const matchesRouter = require('./server/routes/matches');
-  app.use('/api/matches', matchesRouter);
-  console.log('Matches router loaded successfully');
-} catch(e) {
-  console.error('Matches router error:', e.message);
-  console.error('Stack:', e.stack);
-}
+console.log('DB_PATH:', DB_PATH);
+console.log('DB exists:', require('fs').existsSync(DB_PATH));
 
-try {
-  const recommendationsRouter = require('./server/routes/recommendations');
-  app.use('/api/recommendations', recommendationsRouter);
-  console.log('Recommendations router loaded successfully');
-} catch(e) {
-  console.error('Recommendations router error:', e.message);
-  console.error('Stack:', e.stack);
-}
+app.get('/api/matches', (req, res) => {
+  const date = req.query.date || new Date().toISOString().split('T')[0];
+  try {
+    const db = new Database(DB_PATH, { readonly: true });
+    const matches = db.prepare(`
+      SELECT m.*, o.sp_home, o.sp_draw, o.sp_away,
+             o.sp_handicap_home, o.sp_handicap_draw, o.sp_handicap_away,
+             o.score_odds_json, o.goals_odds_json, o.half_odds_json,
+             p.prob_home, p.prob_draw, p.prob_away,
+             p.value_spf_json, p.confidence
+      FROM matches m
+      LEFT JOIN (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY match_id ORDER BY snapshot_time DESC) as rn
+        FROM odds_snapshots
+      ) o ON m.match_id = o.match_id AND o.rn = 1
+      LEFT JOIN (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY match_id ORDER BY created_at DESC) as rn
+        FROM predictions
+      ) p ON m.match_id = p.match_id AND p.rn = 1
+      WHERE m.match_date = ?
+      ORDER BY m.match_time
+    `).all(date);
+    db.close();
+    res.json({ success: true, date, count: matches.length, matches });
+  } catch (e) {
+    console.error('Matches API error:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
-try {
-  const matchDetailsRouter = require('./server/routes/match_details');
-  app.use('/api/match-details', matchDetailsRouter);
-  console.log('Match details router loaded successfully');
-} catch(e) {
-  console.error('Match details router error:', e.message);
-  console.error('Stack:', e.stack);
-}
+app.get('/api/recommendations', (req, res) => {
+  const date = req.query.date || new Date().toISOString().split('T')[0];
+  try {
+    const db = new Database(DB_PATH, { readonly: true });
+    const recs = db.prepare('SELECT * FROM recommendations WHERE rec_date = ? ORDER BY rec_type, total_odds DESC').all(date);
+    const parsed = recs.map(r => {
+      const legs = JSON.parse(r.matches_json || '[]');
+      const enriched = legs.map(leg => {
+        const match = db.prepare('SELECT home_team, away_team, league_name FROM matches WHERE match_id = ?').get(leg.match_id);
+        return { ...leg, home_team: match ? match.home_team : '', away_team: match ? match.away_team : '', league_name: match ? match.league_name : '' };
+      });
+      return { ...r, matches_json: enriched };
+    });
+    db.close();
+    res.json({ success: true, date, recommendations: parsed });
+  } catch (e) {
+    console.error('Recommendations API error:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.get('/api/match-details/:matchId', (req, res) => {
+  try {
+    const db = new Database(DB_PATH, { readonly: true });
+    const details = db.prepare('SELECT * FROM match_details WHERE match_id = ?').get(req.params.matchId);
+    db.close();
+    if (!details) {
+      return res.json({ success: true, match_id: req.params.matchId, details: null });
+    }
+    const homeProfile = JSON.parse(details.home_form_json || 'null');
+    const awayProfile = JSON.parse(details.away_form_json || 'null');
+    const h2h = JSON.parse(details.h2h_json || 'null');
+    const fullStats = JSON.parse(details.home_stats_json || 'null');
+    const parsed = {
+      match_id: details.match_id,
+      home_profile: homeProfile,
+      away_profile: awayProfile,
+      h2h: h2h,
+      home_form: fullStats && fullStats.homeForm ? fullStats.homeForm : null,
+      away_form: fullStats && fullStats.awayForm ? fullStats.awayForm : null,
+      odds_analysis: fullStats && fullStats.oddsAnalysis ? fullStats.oddsAnalysis : null,
+      home_standings: fullStats && fullStats.homeStandings ? fullStats.homeStandings : null,
+      away_standings: fullStats && fullStats.awayStandings ? fullStats.awayStandings : null,
+    };
+    res.json({ success: true, ...parsed });
+  } catch (e) {
+    console.error('Match details API error:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+console.log('API routes registered inline');
 
 // 启动服务器
 const server = app.listen(PORT, '0.0.0.0', () => {
