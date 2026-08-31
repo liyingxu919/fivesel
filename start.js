@@ -24,6 +24,16 @@ app.get('/health', (req, res) => {
 // 静态文件
 app.use(express.static(path.join(__dirname, 'web')));
 
+// 初始化数据库
+try {
+  const { initDatabase } = require('./collectors/utils/db');
+  const db = initDatabase();
+  db.close();
+  console.log('Database initialized');
+} catch(e) {
+  console.error('Database init error:', e.message);
+}
+
 // API 路由
 try {
   const matchesRouter = require('./server/routes/matches');
