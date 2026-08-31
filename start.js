@@ -1,9 +1,10 @@
 /**
  * 竞彩足球分析系统 - 统一入口
  */
-console.log('Starting Jingcai Football Analyzer...');
+console.log('Starting Jingcai Football Analyzer v3...');
 console.log('Node version:', process.version);
 console.log('Environment PORT:', process.env.PORT);
+console.log('Commit: 6ebcc30 - inline routes');
 
 const express = require('express');
 const cors = require('cors');
@@ -18,7 +19,12 @@ app.use(express.json());
 
 // 最简单的健康检查
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
+  res.json({ status: 'ok', time: new Date().toISOString(), version: 'v3-inline-routes' });
+});
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API routes are working!', time: new Date().toISOString() });
 });
 
 // 静态文件
