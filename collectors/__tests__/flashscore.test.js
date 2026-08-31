@@ -185,8 +185,15 @@ describe('fetchMatchDetails', () => {
     const h2hPayload = { total: { matches: 5 } };
 
     axios.get
+      // searchTeam('team1')
+      .mockResolvedValueOnce({ data: [{ id: 'tid1', name: 'team1', sport: { id: 1 }, type: { id: 2 }, country: { name: '' } }] })
+      // searchTeam('team2')
+      .mockResolvedValueOnce({ data: [{ id: 'tid2', name: 'team2', sport: { id: 1 }, type: { id: 2 }, country: { name: '' } }] })
+      // fetchTeamResults('tid1')
       .mockResolvedValueOnce({ data: homeResultsPayload })
+      // fetchTeamResults('tid2')
       .mockResolvedValueOnce({ data: awayResultsPayload })
+      // fetchH2H('tid1', 'tid2')
       .mockResolvedValueOnce({ data: h2hPayload });
 
     const details = await fetchMatchDetails(db, 'test001', 'team1', 'team2');
@@ -207,8 +214,15 @@ describe('fetchMatchDetails', () => {
 
   test('handles API failures gracefully', async () => {
     axios.get
+      // searchTeam('team1')
+      .mockResolvedValueOnce({ data: [{ id: 'tid1', name: 'team1', sport: { id: 1 }, type: { id: 2 }, country: { name: '' } }] })
+      // searchTeam('team2')
+      .mockResolvedValueOnce({ data: [{ id: 'tid2', name: 'team2', sport: { id: 1 }, type: { id: 2 }, country: { name: '' } }] })
+      // fetchTeamResults('tid1') fails
       .mockRejectedValueOnce(new Error('Home results failed'))
+      // fetchTeamResults('tid2')
       .mockResolvedValueOnce({ data: { results: ['W'] } })
+      // fetchH2H('tid1', 'tid2')
       .mockResolvedValueOnce({ data: { h2h: true } });
 
     const details = await fetchMatchDetails(db, 'test001', 'team1', 'team2');
@@ -230,22 +244,34 @@ describe('fetchMatchDetails', () => {
     const callTimestamps = [];
     axios.get.mockImplementation((url) => {
       callTimestamps.push(Date.now());
+      // searchTeam returns teams with IDs, other calls return data
+      if (url.includes('search')) {
+        return Promise.resolve({ data: [{ id: 'tid_' + callTimestamps.length, name: 'T', sport: { id: 1 }, type: { id: 2 }, country: { name: '' } }] });
+      }
       return Promise.resolve({ data: {} });
     });
 
     const promise = fetchMatchDetails(db, 'test001', 'team1', 'team2');
 
-    // First call fires immediately (no sleep before it)
+    // 1. searchTeam('team1') fires immediately
     await jest.advanceTimersByTimeAsync(0);
     expect(callTimestamps).toHaveLength(1);
 
-    // After 1s delay, second call fires
+    // 2. After 1s delay, searchTeam('team2') fires
     await jest.advanceTimersByTimeAsync(1000);
     expect(callTimestamps).toHaveLength(2);
 
-    // After another 1s delay, third call fires
+    // 3. After 1s delay, fetchTeamResults(homeTeamId) fires
     await jest.advanceTimersByTimeAsync(1000);
     expect(callTimestamps).toHaveLength(3);
+
+    // 4. After 1s delay, fetchTeamResults(awayTeamId) fires
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(callTimestamps).toHaveLength(4);
+
+    // 5. After 1s delay, fetchH2H fires
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(callTimestamps).toHaveLength(5);
 
     await promise;
     jest.useRealTimers();

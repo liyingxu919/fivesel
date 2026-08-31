@@ -182,6 +182,9 @@ def run_analysis(date_str=None):
                   f'选: {b["outcome"]} @ {b.get("odds", "?")} | 概率: {b["model_prob"]:.1%}')
         print()
 
+    # 保存 Elo 评分
+    model.elo.save()
+
     db.close()
     print('分析完成!')
 

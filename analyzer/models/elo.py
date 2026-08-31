@@ -1,6 +1,10 @@
 """Elo 评分系统"""
+import json
+import os
 import math
 from config import ELO_INITIAL, ELO_K, ELO_HOME_ADVANTAGE
+
+ELO_RATINGS_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'elo_ratings.json')
 
 
 class EloSystem:
@@ -11,6 +15,22 @@ class EloSystem:
         self.initial = initial
         self.k = k
         self.home_advantage = home_advantage
+        self._load()
+
+    def _load(self):
+        """从 JSON 文件加载 Elo 评分"""
+        if os.path.exists(ELO_RATINGS_PATH):
+            try:
+                with open(ELO_RATINGS_PATH, 'r', encoding='utf-8') as f:
+                    self.ratings = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                pass
+
+    def save(self):
+        """将 Elo 评分保存到 JSON 文件"""
+        os.makedirs(os.path.dirname(ELO_RATINGS_PATH), exist_ok=True)
+        with open(ELO_RATINGS_PATH, 'w', encoding='utf-8') as f:
+            json.dump(self.ratings, f, ensure_ascii=False, indent=2)
 
     def get_or_create(self, team_name):
         if team_name not in self.ratings:

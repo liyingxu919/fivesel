@@ -89,11 +89,30 @@ function saveMatchDetails(db, matchId, details) {
 async function fetchMatchDetails(db, matchId, homeTeam, awayTeam) {
   logger.info(`采集 FlashScore 数据: ${homeTeam} vs ${awayTeam}`);
 
-  const homeResults = await fetchTeamResults(homeTeam);
+  // Resolve team names to numeric IDs via search API
+  const homeTeams = await searchTeam(homeTeam);
   await sleep(1000);
-  const awayResults = await fetchTeamResults(awayTeam);
+  const awayTeams = await searchTeam(awayTeam);
   await sleep(1000);
-  const h2h = await fetchH2H(homeTeam, awayTeam);
+
+  if (!homeTeams.length) {
+    logger.error(`FlashScore 未找到主队: ${homeTeam}`);
+    return null;
+  }
+  if (!awayTeams.length) {
+    logger.error(`FlashScore 未找到客队: ${awayTeam}`);
+    return null;
+  }
+
+  const homeTeamId = homeTeams[0].id;
+  const awayTeamId = awayTeams[0].id;
+  logger.info(`FlashScore ID: ${homeTeam}=${homeTeamId}, ${awayTeam}=${awayTeamId}`);
+
+  const homeResults = await fetchTeamResults(homeTeamId);
+  await sleep(1000);
+  const awayResults = await fetchTeamResults(awayTeamId);
+  await sleep(1000);
+  const h2h = await fetchH2H(homeTeamId, awayTeamId);
 
   const details = {
     homeForm: homeResults,

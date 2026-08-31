@@ -16,8 +16,14 @@ router.get('/', (req, res) => {
              p.prob_home, p.prob_draw, p.prob_away,
              p.value_spf_json, p.confidence
       FROM matches m
-      LEFT JOIN odds_snapshots o ON m.match_id = o.match_id
-      LEFT JOIN predictions p ON m.match_id = p.match_id
+      LEFT JOIN (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY match_id ORDER BY snapshot_time DESC) as rn
+        FROM odds_snapshots
+      ) o ON m.match_id = o.match_id AND o.rn = 1
+      LEFT JOIN (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY match_id ORDER BY created_at DESC) as rn
+        FROM predictions
+      ) p ON m.match_id = p.match_id AND p.rn = 1
       WHERE m.match_date = ?
       ORDER BY m.match_time
     `).all(date);

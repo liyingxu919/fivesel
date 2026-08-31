@@ -40,7 +40,7 @@ async function runOddsUpdate() {
 // 定时任务
 cron.schedule('0 8 * * *', runMorningCollection);   // 每天 08:00
 cron.schedule('0 12 * * *', runOddsUpdate);          // 每天 12:00
-cron.schedule('0 * * * *', runOddsUpdate);           // 每小时更新赔率
+cron.schedule('0 0-7,9-23 * * *', runOddsUpdate);    // 每小时更新赔率 (跳过 08:00 避免与早间采集重叠)
 
 logger.info('竞彩数据采集调度器已启动');
 

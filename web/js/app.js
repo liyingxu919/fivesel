@@ -1,5 +1,10 @@
 const API = '';
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 async function fetchJSON(url) {
   const resp = await fetch(API + url);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -64,10 +69,10 @@ function renderRecommendations(recs) {
                     m.outcome === 'away' ? '客胜' : m.outcome;
       html += `
         <div class="combo-leg">
-          <span class="leg-match">${m.home_team || ''} vs ${m.away_team || ''}</span>
-          <span class="leg-pick ${pickClass(m.outcome)}">${label}</span>
-          <span class="leg-odds">${m.odds || '?'}</span>
-          <span class="leg-value">价值 ${m.value_score || '?'}</span>
+          <span class="leg-match">${escapeHtml(m.home_team || '')} vs ${escapeHtml(m.away_team || '')}</span>
+          <span class="leg-pick ${pickClass(m.outcome)}">${escapeHtml(label)}</span>
+          <span class="leg-odds">${escapeHtml(m.odds || '?')}</span>
+          <span class="leg-value">价值 ${escapeHtml(m.value_score || '?')}</span>
         </div>`;
     }
 
@@ -89,18 +94,18 @@ function renderMatches(matches) {
     const confidence = m.confidence != null ? Math.round(m.confidence * 100) + '%' : null;
     html += `
       <div class="match-card">
-        <span class="match-league">${m.league_name || ''}</span>
+        <span class="match-league">${escapeHtml(m.league_name || '')}</span>
         <div class="match-teams">
-          <span class="team">${m.home_team}</span>
+          <span class="team">${escapeHtml(m.home_team)}</span>
           <span class="vs">VS</span>
-          <span class="team">${m.away_team}</span>
+          <span class="team">${escapeHtml(m.away_team)}</span>
         </div>
         <div class="match-odds">
-          <div class="odd-btn"><div class="label">主胜</div><div class="sp odd-sp-win">${m.sp_home || '—'}</div></div>
-          <div class="odd-btn"><div class="label">平</div><div class="sp odd-sp-draw">${m.sp_draw || '—'}</div></div>
-          <div class="odd-btn"><div class="label">客胜</div><div class="sp odd-sp-lose">${m.sp_away || '—'}</div></div>
+          <div class="odd-btn"><div class="label">主胜</div><div class="sp odd-sp-win">${escapeHtml(m.sp_home || '—')}</div></div>
+          <div class="odd-btn"><div class="label">平</div><div class="sp odd-sp-draw">${escapeHtml(m.sp_draw || '—')}</div></div>
+          <div class="odd-btn"><div class="label">客胜</div><div class="sp odd-sp-lose">${escapeHtml(m.sp_away || '—')}</div></div>
         </div>
-        ${confidence ? '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--dim)">置信度: ' + confidence + '</div>' : ''}
+        ${confidence ? '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--dim)">置信度: ' + escapeHtml(confidence) + '</div>' : ''}
       </div>`;
   }
 
@@ -149,7 +154,7 @@ async function renderTracking() {
         </div>
       </div>`;
   } catch (e) {
-    container.innerHTML = '<div class="empty-state">无法加载统计数据: ' + e.message + '</div>';
+    container.innerHTML = '<div class="empty-state">无法加载统计数据: ' + escapeHtml(e.message) + '</div>';
   }
 }
 
