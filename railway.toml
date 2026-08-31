@@ -3,6 +3,7 @@ builder = "dockerfile"
 
 [deploy]
 startCommand = "node start.js"
-healthcheckPath = "/api/matches"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3

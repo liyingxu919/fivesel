@@ -21,16 +21,28 @@ const matchDetailsRouter = require('./server/routes/match_details');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 全局错误处理
+process.on('uncaughtException', (err) => {
+  console.error('未捕获异常:', err.message);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('未处理Promise:', err.message || err);
+});
+
 app.use(cors());
 app.use(express.json());
+
+// Health check endpoint
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 app.use(express.static(path.join(__dirname, 'web')));
 
 app.use('/api/matches', matchesRouter);
 app.use('/api/recommendations', recommendationsRouter);
 app.use('/api/match-details', matchDetailsRouter);
 
-app.listen(PORT, () => {
-  console.log(`竞彩分析服务已启动: http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`竞彩分析服务已启动: http://0.0.0.0:${PORT}`);
 });
 
 // 启动定时采集（仅在非Vercel/serverless环境）
@@ -90,8 +102,10 @@ if (!process.env.VERCEL) {
 
     logger.info('定时采集调度器已启动');
 
-    // 启动时立即采集一次
-    runMorningCollection().catch(e => logger.error(`启动采集失败: ${e.message}`));
+    // 延迟30秒后采集，确保Web服务先启动完成
+    setTimeout(() => {
+      runMorningCollection().catch(e => logger.error(`启动采集失败: ${e.message}`));
+    }, 30000);
   } catch (e) {
     console.error('定时采集启动失败:', e.message);
   }
