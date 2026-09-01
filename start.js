@@ -137,6 +137,36 @@ app.get('/api/match-details/:matchId', async (req, res) => {
   }
 });
 
+// Manual data collection endpoint
+app.post('/api/collect', async (req, res) => {
+  try {
+    const { fetchAndSaveMatches } = require('./collectors/jczq-500');
+    const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
+    const { fetchAllTeamAnalysis } = require('./collectors/team-analysis');
+    const { generateRecommendations, saveRecommendations } = require('./collectors/recommendation-generator');
+    const { getDatabase } = require('./collectors/utils/db');
+
+    const db = getDatabase();
+    const matches = await fetchAndSaveMatches(db);
+    await fetchAndSaveExtra(db);
+    await fetchAllTeamAnalysis(db);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    const combos = generateRecommendations(db, dateStr);
+    saveRecommendations(db, dateStr, combos);
+    db.close();
+
+    res.json({
+      success: true,
+      matches_collected: matches.length,
+      recommendations: combos.main.length + combos.backup.length + combos.score.length,
+    });
+  } catch (e) {
+    console.error('Manual collection error:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 // Manual recommendation generation endpoint
 app.post('/api/generate-recommendations', async (req, res) => {
   const { getDatabase } = require('./collectors/utils/db');
