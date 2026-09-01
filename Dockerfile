@@ -18,8 +18,7 @@ RUN npm ci
 # 复制项目文件
 COPY . .
 
-# 重新编译原生模块
-RUN npm rebuild better-sqlite3
+# sql.js is pure JS, no rebuild needed
 
 # 确保data目录存在
 RUN mkdir -p data && chmod 777 data
