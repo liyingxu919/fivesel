@@ -84,6 +84,87 @@ body {
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 20px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.analysis-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.analysis-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.analysis-league {
+  font-size: 11px;
+  color: var(--dim);
+  background: rgba(255,255,255,.06);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.analysis-teams {
+  font-size: 14px;
+  font-weight: 700;
+}
+.analysis-handicap {
+  font-size: 11px;
+  color: var(--blue);
+  background: rgba(88,166,255,.12);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.analysis-body {
+  font-size: 13px;
+  color: var(--text);
+}
+.analysis-xg {
+  margin-bottom: 6px;
+  color: var(--dim);
+}
+.analysis-probs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.analysis-probs .prob-home { color: var(--green); font-weight: 700; }
+.analysis-probs .prob-away { color: var(--blue); font-weight: 700; }
+.analysis-probs .prob-draw { color: var(--gold); }
+.analysis-score {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 6px;
+  color: var(--dim);
+}
+.analysis-value {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.value-tag {
+  font-size: 12px;
+  color: var(--dim);
+  margin-right: 8px;
+}
+.value-item {
+  font-size: 12px;
+  color: var(--green);
+  background: rgba(63,185,80,.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
 .combo-card {
   background: var(--card);
   border: 1px solid var(--border);

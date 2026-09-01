@@ -90,11 +90,17 @@ app.get('/api/recommendations', async (req, res) => {
           total_odds: combo.total_odds,
           stake: combo.stake,
           expected_value: combo.expected_value || 0,
+          type: combo.type,
         });
       }
     }
 
-    res.json({ success: true, date, recommendations: allRecs });
+    res.json({
+      success: true,
+      date,
+      recommendations: allRecs,
+      analyses: combos.analyses || [], // 每场比赛的详细分析
+    });
   } catch (e) {
     console.error('Recommendations API error:', e.message);
     res.status(500).json({ success: false, error: e.message });

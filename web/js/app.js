@@ -37,50 +37,94 @@ function pickClass(outcome) {
   return 'away';
 }
 
-function renderRecommendations(recs) {
+function renderRecommendations(recs, analyses) {
   const container = document.getElementById('recommendations');
-  if (!recs.length) {
-    container.innerHTML = '<div class="empty-state">暂无推荐方案</div>';
-    return;
-  }
 
   let html = '';
-  for (const rec of recs) {
-    const matches = rec.matches_json || [];
-    const totalOdds = rec.total_odds || 0;
-    const typeName = rec.rec_type === 'main' ? '主力串3' :
-                     rec.rec_type === 'backup' ? '辅助串4' : '比分单挑';
 
-    html += `
-      <div class="combo-card">
-        <div class="combo-header">
-          <span class="combo-type">${typeName}</span>
-          <span class="combo-odds">${totalOdds.toFixed(2)}x</span>
-        </div>
-        <div class="combo-meta">
-          <span>投入: ${rec.stake}元</span>
-          <span>预期回报: ${(rec.stake * totalOdds).toFixed(0)}元</span>
-          <span>期望值: ${(rec.expected_value || 0).toFixed(2)}</span>
-        </div>`;
-
-    for (const m of matches) {
-      const outcomeLabel = m.outcome === 'home' ? '主胜' :
-                    m.outcome === 'draw' ? '平' :
-                    m.outcome === 'away' ? '客胜' : m.outcome;
-      const isHandicap = m.play_type === 'handicap';
-      const hStr = m.handicap > 0 ? `+${m.handicap}` : (m.handicap || '');
-      const label = isHandicap ? `让(${hStr})${outcomeLabel}` : outcomeLabel;
+  // 显示每场比赛的详细分析
+  if (analyses && analyses.length > 0) {
+    html += '<div class="section-title">单场分析</div>';
+    for (const a of analyses) {
+      const probClass = a.probs.home > a.probs.away ? 'prob-home' : a.probs.away > a.probs.home ? 'prob-away' : 'prob-draw';
       html += `
-        <div class="combo-leg">
-          <span class="leg-id">${escapeHtml(m.match_id || '')}</span>
-          <span class="leg-match">${escapeHtml(m.home_team || '')} vs ${escapeHtml(m.away_team || '')}</span>
-          <span class="leg-pick ${pickClass(m.outcome)}">${escapeHtml(label)}</span>
-          <span class="leg-odds">${escapeHtml(m.odds || '?')}</span>
-          <span class="leg-value">价值 ${escapeHtml(m.value_score || '?')}</span>
+        <div class="analysis-card">
+          <div class="analysis-header">
+            <span class="analysis-league">${escapeHtml(a.league || '')}</span>
+            <span class="analysis-teams">${escapeHtml(a.home_team)} vs ${escapeHtml(a.away_team)}</span>
+            ${a.handicap ? `<span class="analysis-handicap">让球(${a.handicap > 0 ? '+' : ''}${a.handicap})</span>` : ''}
+          </div>
+          <div class="analysis-body">
+            <div class="analysis-xg">
+              <span>预期进球: ${a.homeXG} - ${a.awayXG}</span>
+            </div>
+            <div class="analysis-probs">
+              <span class="${probClass}">主胜 ${Math.round(a.probs.home * 100)}%</span>
+              <span>平 ${Math.round(a.probs.draw * 100)}%</span>
+              <span class="${a.probs.away > a.probs.home ? 'prob-away' : ''}">客胜 ${Math.round(a.probs.away * 100)}%</span>
+            </div>
+            <div class="analysis-score">
+              <span>最可能比分: ${a.best_score.score} (${Math.round(a.best_score.prob * 100)}%)</span>
+              <span>备选: ${a.alt_score.score} (${Math.round(a.alt_score.prob * 100)}%)</span>
+            </div>
+            ${a.spfValues.length > 0 ? `
+              <div class="analysis-value">
+                <span class="value-tag">有价值选项:</span>
+                ${a.spfValues.map(v => `<span class="value-item">${v.outcome === 'home' ? '主胜' : v.outcome === 'draw' ? '平' : '客胜'} @${v.odds} (概率优势${Math.round((v.value_score - 1) * 100)}%)</span>`).join(' ')}
+              </div>
+            ` : ''}
+          </div>
         </div>`;
     }
+  }
 
-    html += '</div>';
+  // 显示推荐方案
+  if (recs.length > 0) {
+    html += '<div class="section-title">推荐方案</div>';
+    for (const rec of recs) {
+      const matches = rec.matches_json || [];
+      const totalOdds = rec.total_odds || 0;
+      const typeName = rec.type || (rec.rec_type === 'main' ? '主力' :
+                       rec.rec_type === 'backup' ? '备选' : '比分');
+
+      html += `
+        <div class="combo-card">
+          <div class="combo-header">
+            <span class="combo-type">${escapeHtml(typeName)}</span>
+            <span class="combo-odds">${totalOdds.toFixed(2)}x</span>
+          </div>
+          <div class="combo-meta">
+            <span>投入: ${rec.stake}元</span>
+            <span>预期回报: ${(rec.stake * totalOdds).toFixed(0)}元</span>
+            ${rec.expected_value ? `<span>期望值: ${rec.expected_value.toFixed(2)}</span>` : ''}
+          </div>`;
+
+      for (const m of matches) {
+        const outcomeLabel = m.outcome === 'home' ? '主胜' :
+                      m.outcome === 'draw' ? '平' :
+                      m.outcome === 'away' ? '客胜' : m.outcome;
+        const isHandicap = m.play_type === 'handicap';
+        const isScore = m.play_type === 'score';
+        const hStr = m.handicap > 0 ? `+${m.handicap}` : (m.handicap || '');
+        let label = outcomeLabel;
+        if (isHandicap) label = `让(${hStr})${outcomeLabel}`;
+        if (isScore) label = `比分 ${m.outcome}`;
+
+        html += `
+          <div class="combo-leg">
+            <span class="leg-match">${escapeHtml(m.home_team || '')} vs ${escapeHtml(m.away_team || '')}</span>
+            <span class="leg-pick ${pickClass(m.outcome)}">${escapeHtml(label)}</span>
+            <span class="leg-odds">@${escapeHtml(String(m.odds || '?'))}</span>
+            ${m.value_score ? `<span class="leg-value">+${Math.round((m.value_score - 1) * 100)}%</span>` : ''}
+          </div>`;
+      }
+
+      html += '</div>';
+    }
+  }
+
+  if (!html) {
+    html = '<div class="empty-state">暂无推荐方案</div>';
   }
 
   container.innerHTML = html;
@@ -498,7 +542,7 @@ async function refreshData() {
       }
     }
 
-    renderRecommendations(recsData.recommendations || []);
+    renderRecommendations(recsData.recommendations || [], recsData.analyses || []);
     renderMatches(matchesData.matches || []);
     status.textContent =
       `${matchesData.count || 0} 场比赛 | ${recsData.recommendations?.length || 0} 组方案`;
