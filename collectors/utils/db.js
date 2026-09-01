@@ -16,10 +16,11 @@ class SqlJsWrapper {
     this._path = dbPath;
     this._readonly = readonly;
     this._closed = false;
+    this._inTransaction = false;
   }
 
   _save() {
-    if (!this._readonly && !this._closed) {
+    if (!this._readonly && !this._closed && !this._inTransaction) {
       const data = this._db.export();
       fs.writeFileSync(this._path, Buffer.from(data));
     }
@@ -65,13 +66,20 @@ class SqlJsWrapper {
   transaction(fn) {
     const self = this;
     return function(...args) {
-      self._db.run('BEGIN TRANSACTION');
+      self._inTransaction = true;
+      try {
+        self._db.run('BEGIN TRANSACTION');
+      } catch(e) {
+        // Transaction might already be active
+      }
       try {
         fn(...args);
         self._db.run('COMMIT');
+        self._inTransaction = false;
         self._save();
       } catch(e) {
-        self._db.run('ROLLBACK');
+        self._inTransaction = false;
+        try { self._db.run('ROLLBACK'); } catch(re) {}
         throw e;
       }
     };
