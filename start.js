@@ -27,10 +27,24 @@ app.use(express.static(path.join(__dirname, 'web')));
 
 // API Routes
 app.get('/api/matches', async (req, res) => {
-  const { getReadonlyDatabase } = require('./collectors/utils/db');
+  const { getDatabase } = require('./collectors/utils/db');
   const date = req.query.date || new Date().toISOString().split('T')[0];
   try {
-    const db = getReadonlyDatabase();
+    const db = getDatabase();
+
+    // Auto-collect if no matches for today
+    const matchCount = db.prepare('SELECT COUNT(*) as count FROM matches WHERE match_date = ?').get(date);
+    if (!matchCount || matchCount.count === 0) {
+      try {
+        const { fetchAndSaveMatches } = require('./collectors/jczq-500');
+        const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
+        await fetchAndSaveMatches(db);
+        await fetchAndSaveExtra(db);
+      } catch(collectErr) {
+        console.error('Auto-collect error:', collectErr.message);
+      }
+    }
+
     const matches = db.prepare(`
       SELECT m.*, o.sp_home, o.sp_draw, o.sp_away,
              o.sp_handicap_home, o.sp_handicap_draw, o.sp_handicap_away,
@@ -58,10 +72,34 @@ app.get('/api/matches', async (req, res) => {
 });
 
 app.get('/api/recommendations', async (req, res) => {
-  const { getReadonlyDatabase } = require('./collectors/utils/db');
+  const { getDatabase } = require('./collectors/utils/db');
+  const { generateRecommendations, saveRecommendations } = require('./collectors/recommendation-generator');
   const date = req.query.date || new Date().toISOString().split('T')[0];
   try {
-    const db = getReadonlyDatabase();
+    const db = getDatabase();
+
+    // Auto-collect if no matches for today
+    const matchCount = db.prepare('SELECT COUNT(*) as count FROM matches WHERE match_date = ?').get(date);
+    if (!matchCount || matchCount.count === 0) {
+      try {
+        const { fetchAndSaveMatches } = require('./collectors/jczq-500');
+        const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
+        await fetchAndSaveMatches(db);
+        await fetchAndSaveExtra(db);
+        const combos = generateRecommendations(db, date);
+        saveRecommendations(db, date, combos);
+      } catch(collectErr) {
+        console.error('Auto-collect error:', collectErr.message);
+      }
+    }
+
+    // Auto-generate recommendations if missing
+    const recCount = db.prepare('SELECT COUNT(*) as count FROM recommendations WHERE rec_date = ?').get(date);
+    if (!recCount || recCount.count === 0) {
+      const combos = generateRecommendations(db, date);
+      saveRecommendations(db, date, combos);
+    }
+
     const recs = db.prepare('SELECT * FROM recommendations WHERE rec_date = ? ORDER BY rec_type, total_odds DESC').all(date);
     const parsed = recs.map(r => {
       const legs = JSON.parse(r.matches_json || '[]');
