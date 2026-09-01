@@ -30,20 +30,12 @@ app.get('/api/matches', async (req, res) => {
   const { getDatabase } = require('./collectors/utils/db');
   const date = req.query.date || new Date().toISOString().split('T')[0];
   try {
-    const db = getDatabase();
+    const { fetchAndSaveMatches } = require('./collectors/jczq-500');
+    const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
 
-    // Auto-collect if no matches for today
-    const matchCount = db.prepare('SELECT COUNT(*) as count FROM matches WHERE match_date = ?').get(date);
-    if (!matchCount || matchCount.count === 0) {
-      try {
-        const { fetchAndSaveMatches } = require('./collectors/jczq-500');
-        const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
-        await fetchAndSaveMatches(db);
-        await fetchAndSaveExtra(db);
-      } catch(collectErr) {
-        console.error('Auto-collect error:', collectErr.message);
-      }
-    }
+    const db = getDatabase();
+    await fetchAndSaveMatches(db);
+    await fetchAndSaveExtra(db);
 
     const matches = db.prepare(`
       SELECT m.*, o.sp_home, o.sp_draw, o.sp_away,
@@ -72,45 +64,37 @@ app.get('/api/matches', async (req, res) => {
 });
 
 app.get('/api/recommendations', async (req, res) => {
-  const { getDatabase } = require('./collectors/utils/db');
-  const { generateRecommendations, saveRecommendations } = require('./collectors/recommendation-generator');
   const date = req.query.date || new Date().toISOString().split('T')[0];
   try {
-    const db = getDatabase();
+    const { generateRecommendations } = require('./collectors/recommendation-generator');
+    const { getDatabase } = require('./collectors/utils/db');
 
-    // Auto-collect if no matches for today
-    const matchCount = db.prepare('SELECT COUNT(*) as count FROM matches WHERE match_date = ?').get(date);
-    if (!matchCount || matchCount.count === 0) {
-      try {
-        const { fetchAndSaveMatches } = require('./collectors/jczq-500');
-        const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
-        await fetchAndSaveMatches(db);
-        await fetchAndSaveExtra(db);
-        const combos = generateRecommendations(db, date);
-        saveRecommendations(db, date, combos);
-      } catch(collectErr) {
-        console.error('Auto-collect error:', collectErr.message);
+    // Collect data and generate recommendations in one go
+    const { fetchAndSaveMatches } = require('./collectors/jczq-500');
+    const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
+
+    const db = getDatabase();
+    await fetchAndSaveMatches(db);
+    await fetchAndSaveExtra(db);
+
+    const combos = generateRecommendations(db, date);
+    db.close();
+
+    // Format response
+    const allRecs = [];
+    for (const recType of ['main', 'backup', 'score']) {
+      for (const combo of (combos[recType] || [])) {
+        allRecs.push({
+          rec_type: recType,
+          matches_json: combo.bets,
+          total_odds: combo.total_odds,
+          stake: combo.stake,
+          expected_value: combo.expected_value || 0,
+        });
       }
     }
 
-    // Auto-generate recommendations if missing
-    const recCount = db.prepare('SELECT COUNT(*) as count FROM recommendations WHERE rec_date = ?').get(date);
-    if (!recCount || recCount.count === 0) {
-      const combos = generateRecommendations(db, date);
-      saveRecommendations(db, date, combos);
-    }
-
-    const recs = db.prepare('SELECT * FROM recommendations WHERE rec_date = ? ORDER BY rec_type, total_odds DESC').all(date);
-    const parsed = recs.map(r => {
-      const legs = JSON.parse(r.matches_json || '[]');
-      const enriched = legs.map(leg => {
-        const match = db.prepare('SELECT home_team, away_team, league_name FROM matches WHERE match_id = ?').get(leg.match_id);
-        return { ...leg, home_team: match ? match.home_team : '', away_team: match ? match.away_team : '', league_name: match ? match.league_name : '' };
-      });
-      return { ...r, matches_json: enriched };
-    });
-    db.close();
-    res.json({ success: true, date, recommendations: parsed });
+    res.json({ success: true, date, recommendations: allRecs });
   } catch (e) {
     console.error('Recommendations API error:', e.message);
     res.status(500).json({ success: false, error: e.message });
