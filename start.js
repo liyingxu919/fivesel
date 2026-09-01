@@ -137,6 +137,30 @@ app.get('/api/match-details/:matchId', async (req, res) => {
   }
 });
 
+// Manual recommendation generation endpoint
+app.post('/api/generate-recommendations', async (req, res) => {
+  const { getDatabase } = require('./collectors/utils/db');
+  const { generateRecommendations, saveRecommendations } = require('./collectors/recommendation-generator');
+  try {
+    const db = getDatabase();
+    const dateStr = req.body.date || new Date().toISOString().split('T')[0];
+    const combos = generateRecommendations(db, dateStr);
+    saveRecommendations(db, dateStr, combos);
+    db.close();
+    res.json({
+      success: true,
+      date: dateStr,
+      main: combos.main.length,
+      backup: combos.backup.length,
+      score: combos.score.length,
+      total_stake: combos.total_stake,
+    });
+  } catch (e) {
+    console.error('Generate recommendations error:', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 console.log('API routes registered');
 
 // Start server
@@ -146,6 +170,27 @@ async function main() {
   try {
     await initDatabaseAsync();
     console.log('Database initialized');
+
+    // Generate recommendations on startup if missing for today
+    try {
+      const { getDatabase } = require('./collectors/utils/db');
+      const { generateRecommendations, saveRecommendations } = require('./collectors/recommendation-generator');
+      const db = getDatabase();
+      const dateStr = new Date().toISOString().split('T')[0];
+      const existing = db.prepare('SELECT COUNT(*) as count FROM recommendations WHERE rec_date = ?').get(dateStr);
+      if (!existing || existing.count === 0) {
+        const combos = generateRecommendations(db, dateStr);
+        if (combos.main.length + combos.backup.length + combos.score.length > 0) {
+          saveRecommendations(db, dateStr, combos);
+          console.log(`Generated ${combos.main.length + combos.backup.length + combos.score.length} recommendation combos`);
+        }
+      } else {
+        console.log(`Found ${existing.count} existing recommendations for today`);
+      }
+      db.close();
+    } catch(e) {
+      console.error('Recommendation generation error:', e.message);
+    }
   } catch(e) {
     console.error('Database init error:', e.message);
   }
@@ -172,6 +217,7 @@ async function main() {
       const { fetchMatchDetails, generateMatchDetailsFromProfiles } = require('./collectors/flashscore');
       const { fetchAndSaveExtra } = require('./collectors/jczq-extra');
       const { fetchAllTeamAnalysis } = require('./collectors/team-analysis');
+      const { generateRecommendations, saveRecommendations } = require('./collectors/recommendation-generator');
       const { getDatabase } = require('./collectors/utils/db');
       const logger = require('./collectors/utils/logger');
 
@@ -197,6 +243,13 @@ async function main() {
 
           await fetchAndSaveExtra(db);
           await fetchAllTeamAnalysis(db);
+
+          // Generate recommendations
+          const dateStr = new Date().toISOString().split('T')[0];
+          const combos = generateRecommendations(db, dateStr);
+          saveRecommendations(db, dateStr, combos);
+          logger.info(`Recommendations generated: ${combos.main.length + combos.backup.length + combos.score.length} combos`);
+
           db.close();
           logger.info('=== Daily morning collection done ===');
         } catch (e) {
@@ -209,6 +262,10 @@ async function main() {
         try {
           const db = getDatabase();
           await fetchAndSaveMatches(db);
+          // Regenerate recommendations with updated odds
+          const dateStr = new Date().toISOString().split('T')[0];
+          const combos = generateRecommendations(db, dateStr);
+          saveRecommendations(db, dateStr, combos);
           db.close();
           logger.info('Odds update done');
         } catch (e) {
