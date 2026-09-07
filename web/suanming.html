@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>铁板神数 · 互动排盘</title>
+<style>
+:root {
+  --bg:#f5f5f7;--card:rgba(255,255,255,.72);--card-solid:#fff;
+  --border:rgba(0,0,0,.08);--accent:#0071e3;--accent2:#0077ed;
+  --red:#ff3b30;--green:#34c759;--yellow:#ff9500;
+  --text:#1d1d1f;--text2:#6e6e73;--text3:#86868b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);font-family:-apple-system,'SF Pro Display','PingFang SC',sans-serif;color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:16px;-webkit-font-smoothing:antialiased}
+.container{max-width:520px;width:100%}
+.card{background:var(--card);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.card h2{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:14px;letter-spacing:.5px}
+.header{text-align:center;padding:32px 0 16px}
+.header h1{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.header .sub{font-size:13px;color:var(--text3);margin-top:4px}
+.tabs{display:flex;gap:4px;margin-bottom:12px;background:rgba(0,0,0,.05);border-radius:12px;padding:3px}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text3);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;text-align:center;transition:all .2s}
+.tab:hover{color:var(--text2)}
+.tab.active{background:rgba(255,255,255,.9);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.btn{padding:10px 20px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn:active{transform:scale(.96);opacity:.8}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-outline{background:rgba(0,0,0,.04);color:var(--text);border:1px solid var(--border)}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:10px}
+.btn-row{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+select{padding:10px 14px;background:rgba(0,0,0,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;min-width:60px;cursor:pointer}
+select:focus{outline:none;border-color:var(--accent)}
+.input-group{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.input-group label{font-size:12px;color:var(--text3);margin-right:2px}
+.radio-group{display:flex;gap:12px;justify-content:center;margin-top:8px}
+.radio-group label{font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px}
+.pillar-box{display:inline-flex;flex-direction:column;align-items:center;padding:12px 16px;border-radius:12px;background:rgba(0,0,0,.03);border:1px solid var(--border);min-width:72px;margin:4px}
+.pillar-box .gan{font-size:24px;font-weight:700;color:var(--accent)}
+.pillar-box .zhi{font-size:24px;font-weight:700;color:var(--red)}
+.pillar-box .label{font-size:10px;color:var(--text3);margin-bottom:4px}
+.pillar-box .nayin{font-size:10px;color:var(--text3);margin-top:4px}
+.pillar-box .canggan{font-size:9px;color:var(--text3);margin-top:2px}
+.yao{width:80px;height:8px;background:var(--accent);border-radius:4px;margin:4px 0;position:relative}
+.yao.broken::after{content:'';position:absolute;top:0;left:35%;width:30%;height:100%;background:var(--card-solid)}
+.luoshu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:180px;margin:0 auto}
+.luoshu-cell{height:56px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;border-radius:10px;background:rgba(0,0,0,.03);border:1px solid var(--border)}
+.luoshu-cell.center{background:rgba(0,113,227,.1);border-color:var(--accent);color:var(--accent)}
+.wx-bar{display:flex;gap:6px;align-items:flex-end;justify-content:center;height:100px;margin:12px 0}
+.wx-bar-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.wx-bar-fill{width:32px;border-radius:6px 6px 0 0;transition:height .5s}
+.wx-bar-label{font-size:10px;color:var(--text3)}
+.wx-bar-value{font-size:11px;font-weight:600}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.question-card .q-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.question-card .q-category{font-size:11px;color:var(--accent);margin-bottom:8px}
+.option-btn{display:block;width:100%;padding:12px 16px;margin-bottom:8px;background:rgba(0,0,0,.03);border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--text);cursor:pointer;text-align:left;font-family:inherit;transition:all .15s}
+.option-btn:hover{background:rgba(0,113,227,.06);border-color:var(--accent)}
+.confirmed-item{padding:8px 12px;border-radius:10px;background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.15);margin-bottom:6px;font-size:12px}
+.confirmed-item .ci-cat{font-size:10px;color:var(--green);font-weight:600}
+.progress-bar{height:4px;background:rgba(0,0,0,.06);border-radius:2px;margin:8px 0}
+.progress-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+.result-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:12px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.result-section h3{font-size:18px;font-weight:700;margin-bottom:16px;text-align:center}
+.result-item{margin-bottom:16px}
+.result-item h4{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:6px}
+.result-item p{font-size:13px;color:var(--text2);line-height:1.8}
+.toast{position:fixed;top:54px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--text);padding:10px 22px;border-radius:14px;font-size:14px;font-weight:600;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.toast.show{opacity:1}
+@media(max-width:500px){.container{padding:8px}.pillar-box{min-width:60px;padding:10px 12px}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="container">
+
+<div class="header">
+  <h1>铁板神数</h1>
+  <div class="sub">先天卦数 · 河图洛书 · 互动排盘</div>
+</div>
+
+<div class="card" id="inputCard">
+  <h2>输入生辰</h2>
+  <div class="tabs" id="inputTabs">
+    <div class="tab active" data-mode="calendar">公历</div>
+    <div class="tab" data-mode="ganzhi">干支</div>
+  </div>
+  <div id="calendarInput" class="input-group">
+    <select id="selYear"></select><label>年</label>
+    <select id="selMonth"></select><label>月</label>
+    <select id="selDay"></select><label>日</label>
+    <select id="selHour"></select><label>时辰</label>
+  </div>
+  <div id="ganzhiInput" class="input-group" style="display:none">
+    <label>年柱</label><select id="gzYearGan"></select><select id="gzYearZhi"></select>
+    <label>月柱</label><select id="gzMonthGan"></select><select id="gzMonthZhi"></select>
+    <label>日柱</label><select id="gzDayGan"></select><select id="gzDayZhi"></select>
+    <label>时柱</label><select id="gzHourGan"></select><select id="gzHourZhi"></select>
+  </div>
+  <div class="radio-group">
+    <label><input type="radio" name="gender" value="male" checked> 男</label>
+    <label><input type="radio" name="gender" value="female"> 女</label>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" onclick="doPaipan()">排盘</button></div>
+</div>
+
+<div id="chartSection" style="display:none">
+  <div class="card"><h2>四柱八字</h2><div id="sizhuContent" style="text-align:center"></div></div>
+  <div class="card"><h2>先天后天卦</h2><div id="baguaContent"></div></div>
+  <div class="card"><h2>河图洛书数理</h2><div id="heltuContent"></div></div>
+  <div class="card"><h2>五行六气</h2><div id="wuxingContent"></div></div>
+</div>
+
+
+<div id="resultSection" style="display:none"></div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════
+const TIAN_GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const DI_ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const WU_XING=['木','火','土','金','水'];
+const LIU_QI=['风','热','火','湿','燥','寒'];
+const SHENG=[1,2,3,4,0];
+const KE=[2,4,1,3,0];
+const WUXING_COLORS=['#34c759','#ff3b30','#ff9500','#8e8e93','#0071e3'];
+const GAN_WX=[0,0,1,1,2,2,3,3,4,4];
+const ZHI_WX=[4,2,0,0,2,1,1,2,3,3,2,4];
+const CANGGAN_TABLE=[['癸'],['己','癸','辛'],['甲','丙','戊'],['乙'],['戊','乙','癸'],['丙','庚','戊'],['丁','己'],['己','丁','乙'],['庚','壬','戊'],['辛'],['戊','辛','丁'],['壬','甲']];
+const NAYIN_TABLE=['海中金','海中金','炉中火','炉中火','大林木','大林木','路旁土','路旁土','剑锋金','剑锋金','山头火','山头火','涧下水','涧下水','城头土','城头土','白蜡金','白蜡金','杨柳木','杨柳木','泉中水','泉中水','屋上土','屋上土','霹雳火','霹雳火','松柏木','松柏木','长流水','长流水','砂中金','砂中金','山下火','山下火','平地木','平地木','壁上土','壁上土','金箔金','金箔金','覆灯火','覆灯火','天河水','天河水','大驿土','大驿土','钗钏金','钗钏金','桑柘木','桑柘木','大溪水','大溪水','砂中土','砂中土','天上火','天上火','石榴木','石榴木','大海水','大海水'];
+const GUA_NAMES_SINGLE=['乾','兑','离','震','巽','坎','艮','坤'];
+const XIAN_BAGUA_NUMS=[1,2,3,4,5,6,7,8];
+const HOU_BAGUA_NUMS=[6,7,9,8,4,1,3,2];
+const GUA_NAMES_MAP=[['乾为天','履','同人','无妄','姤','讼','遁','否'],['夬','兑为泽','革','随','大过','困','咸','萃'],['大有','睽','离为火','噬嗑','鼎','旅','未济','晋'],['大壮','归妹','丰','震为雷','恒','解','小过','豫'],['小畜','中孚','家人','益','巽为风','涣','渐','观'],['需','节','既济','屯','井','坎为水','蹇','比'],['大畜','损','贲','颐','蛊','蒙','艮为山','剥'],['泰','临','明夷','复','升','师','谦','坤为地']];
+const GUA_YAO_MAP={'乾':[1,1,1,1,1,1],'坤':[0,0,0,0,0,0],'震':[1,0,0,1,0,0],'坎':[0,1,0,0,1,0],'艮':[0,0,1,0,0,1],'巽':[0,1,1,0,1,1],'离':[1,0,1,1,0,1],'兑':[1,1,0,1,1,0]};
+const GUA_CI={'乾为天':'元亨利贞。','坤为地':'元亨，利牝马之贞。','屯':'元亨利贞，勿用有攸往。','蒙':'亨。匪我求童蒙，童蒙求我。','需':'有孚，光亨贞吉。','讼':'有孚窒惕，中吉。','师':'贞，丈人吉，无咎。','比':'吉。原筮元永贞，无咎。','小畜':'亨。密云不雨，自我西郊。','履':'履虎尾，不咥人，亨。','泰':'小往大来，吉亨。','否':'否之匪人，不利君子贞。','同人':'同人于野，亨。','大有':'元亨。','谦':'亨，君子有终。','豫':'利建侯行师。','随':'元亨利贞，无咎。','蛊':'元亨，利涉大川。','临':'元亨利贞。','观':'盥而不荐，有孚颙若。','噬嗑':'亨。利用狱。','贲':'亨。小利有攸往。','剥':'不利有攸往。','复':'亨。出入无疾。','无妄':'元亨利贞。','大畜':'利贞。不家食吉。','颐':'贞吉。','大过':'栋桡。利有攸往，亨。','坎':'习坎，有孚维心亨。','离':'利贞，亨。','咸':'亨，利贞。','恒':'亨，无咎，利贞。','遁':'亨，小利贞。','大壮':'利贞。','晋':'康侯用锡马蕃庶。','明夷':'利艰贞。','家人':'利女贞。','睽':'小事吉。','蹇':'利西南。','解':'利西南。','损':'有孚，元吉。','益':'利有攸往。','夬':'扬于王庭。','姤':'女壮，勿用取女。','萃':'亨。王假有庙。','升':'元亨。','困':'亨。贞大人吉。','井':'改邑不改井。','革':'己日乃孚。','鼎':'元吉，亨。','震':'亨。','艮':'艮其背。','渐':'女归吉，利贞。','归妹':'征凶，无攸利。','丰':'亨，王假之。','旅':'小亨，旅贞吉。','巽':'小亨。','兑':'亨，利贞。','涣':'亨。','节':'亨。苦节不可贞。','中孚':'豚鱼吉。','小过':'亨利贞。','既济':'亨小利贞。','未济':'亨。'};
+const HE_TU={0:[3,8],1:[2,7],2:[5,10],3:[4,9],4:[1,6]};
+const LUO_SHU=[4,9,2,3,5,7,8,1,6];
+
+// ═══════════════════════════════════════════
+//  十神系统
+// ═══════════════════════════════════════════
+// 十神名称：比肩、劫财、食神、伤官、偏财、正财、七杀、正官、偏印、正印
+const SHISHEN_NAMES=['比肩','劫财','食神','伤官','偏财','正财','七杀','正官','偏印','正印'];
+const SHISHEN_SHORT=['比','劫','食','伤','偏财','正财','杀','官','枭','印'];
+
+// 计算十神关系：日干 vs 其他干
+function getShishen(dayGan, otherGan){
+  const diff = (otherGan - dayGan + 10) % 10;
+  return diff; // 0=比肩,1=劫财,2=食神,3=伤官,4=偏财,5=正财,6=七杀,7=正官,8=偏印,9=正印
+}
+
+// 十神含义
+const SHISHEN_MEANINGS={
+  0:{name:'比肩',desc:'自我、独立、竞争、兄弟朋友',nature:'中性'},
+  1:{name:'劫财',desc:'争夺、破耗、义气、冲动',nature:'偏凶'},
+  2:{name:'食神',desc:'才华、口福、享乐、子女（女）',nature:'吉'},
+  3:{name:'伤官',desc:'聪明、叛逆、技艺、口才',nature:'偏凶'},
+  4:{name:'偏财',desc:'意外之财、父亲、人缘、风流',nature:'吉'},
+  5:{name:'正财',desc:'稳定收入、妻子（男）、节俭',nature:'吉'},
+  6:{name:'七杀',desc:'权威、压力、小人、军警',nature:'偏凶'},
+  7:{name:'正官',desc:'地位、丈夫（女）、约束、法律',nature:'吉'},
+  8:{name:'偏印',desc:'偏门学问、孤独、继母、宗教',nature:'偏凶'},
+  9:{name:'正印',desc:'学问、母亲、贵人、名声',nature:'吉'}
+};
+
+// ═══════════════════════════════════════════
+//  神煞系统
+// ═══════════════════════════════════════════
+function calcShensha(sizhu){
+  const shensha=[];
+  const {yearGZ,monthGZ,dayGZ,hourGZ}=sizhu;
+  const yearZhi=yearGZ.zhi, monthZhi=monthGZ.zhi, dayZhi=dayGZ.zhi, hourZhi=hourGZ.zhi;
+  const dayGan=dayGZ.gan;
+
+  // 天乙贵人（以日干查四柱地支）
+  const tianyiMap=[[1,7],[0,8],[9,11],[9,11],[1,7],[1,7],[3,7],[3,7],[3,9],[3,9]]; // 甲→丑未,乙→子申...
+  const tianyi=tianyiMap[dayGan];
+  if(tianyi.includes(yearZhi))shensha.push('年柱天乙贵人');
+  if(tianyi.includes(monthZhi))shensha.push('月柱天乙贵人');
+  if(tianyi.includes(hourZhi))shensha.push('时柱天乙贵人');
+
+  // 文昌贵人（以日干查）
+  const wenchangMap=[2,3,5,6,6,7,9,10,0,1]; // 甲→巳,乙→午...
+  if(yearZhi===wenchangMap[dayGan])shensha.push('年柱文昌');
+  if(monthZhi===wenchangMap[dayGan])shensha.push('月柱文昌');
+  if(hourZhi===wenchangMap[dayGan])shensha.push('时柱文昌');
+
+  // 驿马（以年支查）
+  const yimaMap=[2,11,2,11,5,8,5,8,8,5,8,5]; // 子→寅,丑→亥...
+  if(monthZhi===yimaMap[yearZhi])shensha.push('月柱驿马');
+  if(dayZhi===yimaMap[yearZhi])shensha.push('日柱驿马');
+  if(hourZhi===yimaMap[yearZhi])shensha.push('时柱驿马');
+
+  // 桃花（以年支查）
+  const taohuaMap=[9,6,9,6,9,6,9,6,3,0,3,0]; // 子→酉,丑→午...
+  if(monthZhi===taohuaMap[yearZhi])shensha.push('月柱桃花');
+  if(dayZhi===taohuaMap[yearZhi])shensha.push('日柱桃花');
+  if(hourZhi===taohuaMap[yearZhi])shensha.push('时柱桃花');
+
+  // 华盖（以年支查）
+  const huagaiMap=[4,4,4,7,7,7,1,1,1,10,10,10]; // 子辰申→辰...
+  if(monthZhi===huagaiMap[yearZhi])shensha.push('月柱华盖');
+  if(dayZhi===huagaiMap[yearZhi])shensha.push('日柱华盖');
+  if(hourZhi===huagaiMap[yearZhi])shensha.push('时柱华盖');
+
+  // 将星（以年支查）
+  const jiangxingMap=[0,9,6,3,0,9,6,3,0,9,6,3]; // 子→子,丑→酉...
+  if(monthZhi===jiangxingMap[yearZhi])shensha.push('月柱将星');
+  if(dayZhi===jiangxingMap[yearZhi])shensha.push('日柱将星');
+  if(hourZhi===jiangxingMap[yearZhi])shensha.push('时柱将星');
+
+  // 亡神
+  const wangshenMap=[6,3,0,9,6,3,0,9,6,3,0,9];
+  if(monthZhi===wangshenMap[yearZhi])shensha.push('月柱亡神');
+  if(dayZhi===wangshenMap[yearZhi])shensha.push('日柱亡神');
+
+  // 羊刃（以日干查）
+  const yangrenMap=[0,1,6,7,6,7,2,3,4,5]; // 甲→子,乙→丑...
+  if(yearZhi===yangrenMap[dayGan])shensha.push('年柱羊刃');
+  if(monthZhi===yangrenMap[dayGan])shensha.push('月柱羊刃');
+  if(hourZhi===yangrenMap[dayGan])shensha.push('时柱羊刃');
+
+  // 禄神（以日干查）
+  const lushenMap=[2,3,5,6,5,6,8,9,11,0]; // 甲→寅,乙→卯...
+  if(yearZhi===lushenMap[dayGan])shensha.push('年柱禄神');
+  if(monthZhi===lushenMap[dayGan])shensha.push('月柱禄神');
+  if(dayZhi===lushenMap[dayGan])shensha.push('日坐禄');
+  if(hourZhi===lushenMap[dayGan])shensha.push('时柱禄神');
+
+  return shensha;
+}
+
+// ═══════════════════════════════════════════
+//  格局判断
+// ═══════════════════════════════════════════
+function judgeGeju(sizhu, wxCount){
+  const dayGan=sizhu.dayGZ.gan;
+  const dayWX=getGanWuxing(dayGan);
+  const monthGan=sizhu.monthGZ.gan;
+  const monthWX=getGanWuxing(monthGan);
+  const maxWX=wxCount.indexOf(Math.max(...wxCount));
+  const minWX=wxCount.indexOf(Math.min(...wxCount));
+
+  // 月令十神
+  const monthShishen=getShishen(dayGan, monthGan);
+
+  // 日主强弱判断
+  const totalWx=wxCount.reduce((a,b)=>a+b,0);
+  const dayWxRatio=wxCount[dayWX]/totalWx;
+
+  let geju='';
+  let gejuDesc='';
+
+  // 特殊格局
+  if(dayWxRatio>0.4){
+    geju='从旺格';
+    gejuDesc='日主极旺，宜顺不宜逆，行印比运为吉';
+  }else if(dayWxRatio<0.1){
+    geju='从弱格';
+    gejuDesc='日主极弱，宜从势而行，行财官食伤运为吉';
+  }else if(monthShishen===7||monthShishen===6){
+    // 月令正官或七杀
+    geju=monthShishen===7?'正官格':'七杀格';
+    gejuDesc=monthShishen===7?'月令正官，宜正印护身，忌伤官破格':'月令七杀，宜食神制杀或印化杀';
+  }else if(monthShishen===9||monthShishen===8){
+    geju=monthShishen===9?'正印格':'偏印格';
+    gejuDesc=monthShishen===9?'月令正印，学问出众，宜官星相配':'月令偏印，宜偏财制枭';
+  }else if(monthShishen===5||monthShishen===4){
+    geju=monthShishen===5?'正财格':'偏财格';
+    gejuDesc=monthShishen===5?'月令正财，勤俭致富，宜官星护财':'月令偏财，人缘佳，宜食伤生财';
+  }else if(monthShishen===2||monthShishen===3){
+    geju=monthShishen===2?'食神格':'伤官格';
+    gejuDesc=monthShishen===2?'月令食神，才华横溢，宜身旺':'月令伤官，聪明过人，宜配印或财';
+  }else if(monthShishen===0||monthShishen===1){
+    geju=monthShishen===0?'建禄格':'月劫格';
+    gejuDesc='月令比劫，宜用财官食伤';
+  }else{
+    geju='普通格局';
+    gejuDesc='五行较为平衡';
+  }
+
+  return{geju,gejuDesc,monthShishen,dayWxRatio,maxWX,minWX};
+}
+
+let currentMode='calendar';
+let paipanResult=null;
+
+// ═══════════════════════════════════════════
+//  SOLAR TERMS (节气计算)
+// ═══════════════════════════════════════════
+// 2000年24节气基准日期 [月,日] (0-indexed month)
+const SOLAR_TERMS_2000=[
+  [0,6],[0,20],[1,4],[1,19],[2,5],[2,20],  // 小寒,大寒,立春,雨水,惊蛰,春分
+  [3,4],[3,19],[4,5],[4,21],[5,5],[5,21],  // 清明,谷雨,立夏,小满,芒种,夏至
+  [6,7],[6,22],[7,7],[7,23],[8,7],[8,22],  // 小暑,大暑,立秋,处暑,白露,秋分
+  [9,8],[9,23],[10,7],[10,22],[11,7],[11,21] // 寒露,霜降,立冬,小雪,大雪,冬至
+];
+
+function calcSolarTerm(year,termIdx){
+  const base=SOLAR_TERMS_2000[termIdx];
+  const baseMonth=base[0], baseDay=base[1];
+  const diff=year-2000;
+  const drift=Math.floor(diff*0.2422);
+  const co=Math.min(Math.floor((year-1900)/100),3);
+  const corr=[0,-0.3,-0.6,-0.8][co];
+  let d=baseDay+drift+corr;
+  let m=baseMonth;
+  const dim=[31,(year%4===0&&year%100!==0)||(year%400===0)?29:28,31,30,31,30,31,31,30,31,30,31];
+  if(d>dim[m]){d-=dim[m];m++}
+  if(m>11)m=11;
+  return new Date(year,m,Math.floor(d));
+}
+
+// ═══════════════════════════════════════════
+//  FOUR PILLARS (四柱排盘)
+// ═══════════════════════════════════════════
+function getNayin(gan,zhi){
+  for(let i=0;i<60;i++)if(i%10===gan&&i%12===zhi)return NAYIN_TABLE[i];
+  return'';
+}
+function getCanggan(zhi){return CANGGAN_TABLE[zhi].join('')}
+
+function calcYearPillar(year,month,day){
+  const lichun=calcSolarTerm(year,2);
+  const d=new Date(year,month-1,day);
+  let y=d<lichun?year-1:year;
+  const gan=((y-4)%10+10)%10;
+  const zhi=((y-4)%12+12)%12;
+  return{gan,zhi,ganName:TIAN_GAN[gan],zhiName:DI_ZHI[zhi]};
+}
+
+function calcMonthPillar(year,month,day,yearGan){
+  // 节气索引: 立春(2),惊蛰(4),清明(6),立夏(8),芒种(10),小暑(12),立秋(14),白露(16),寒露(18),立冬(20),大雪(22),小寒(0)
+  const jieMap=[2,4,6,8,10,12,14,16,18,20,22,0];
+  const target=new Date(year,month-1,day);
+  let mp=-1;
+  for(let i=11;i>=0;i--){
+    const jd=calcSolarTerm(year,jieMap[i]);
+    if(target>=jd){mp=i;break}
+  }
+  if(mp===-1){mp=11;year--}
+  // 地支: 寅(2)月起
+  const zhiIdx=(mp+2)%12;
+  // 天干: 五虎遁月公式 ((年干%5)*2+月序+2)%10
+  const ganIdx=((yearGan%5)*2+mp+2)%10;
+  return{gan:ganIdx,zhi:zhiIdx,ganName:TIAN_GAN[ganIdx],zhiName:DI_ZHI[zhiIdx]};
+}
+
+function calcDayPillar(year,month,day){
+  const base=new Date(2000,0,7);
+  const target=new Date(year,month-1,day);
+  const diff=Math.floor((target-base)/86400000);
+  const gan=((diff%10)+10)%10;
+  const zhi=((diff%12)+12)%12;
+  return{gan,zhi,ganName:TIAN_GAN[gan],zhiName:DI_ZHI[zhi]};
+}
+
+function calcHourPillar(dayGan,hourIdx){
+  const ganIdx=getHourGan(dayGan,hourIdx);
+  return{gan:ganIdx,zhi:hourIdx,ganName:TIAN_GAN[ganIdx],zhiName:DI_ZHI[hourIdx]};
+}
+
+function calcSizhu(year,month,day,hourIdx){
+  const yearGZ=calcYearPillar(year,month,day);
+  const monthGZ=calcMonthPillar(year,month,day,yearGZ.gan);
+  const dayGZ=calcDayPillar(year,month,day);
+  const hourGZ=calcHourPillar(dayGZ.gan,hourIdx);
+  return{yearGZ,monthGZ,dayGZ,hourGZ,
+    nayin:[getNayin(yearGZ.gan,yearGZ.zhi),getNayin(monthGZ.gan,monthGZ.zhi),getNayin(dayGZ.gan,dayGZ.zhi),getNayin(hourGZ.gan,hourGZ.zhi)],
+    canggan:[getCanggan(yearGZ.zhi),getCanggan(monthGZ.zhi),getCanggan(dayGZ.zhi),getCanggan(hourGZ.zhi)]};
+}
+
+// ═══════════════════════════════════════════
+//  BAGUA (卦象计算)
+// ═══════════════════════════════════════════
+function calcBagua(sizhu){
+  const{yearGZ,monthGZ,dayGZ,hourGZ}=sizhu;
+  const ganNums=[yearGZ.gan+1,monthGZ.gan+1,dayGZ.gan+1,hourGZ.gan+1];
+  const zhiNums=[yearGZ.zhi+1,monthGZ.zhi+1,dayGZ.zhi+1,hourGZ.zhi+1];
+  const ganSum=ganNums.reduce((a,b)=>a+b,0);
+  const zhiSum=zhiNums.reduce((a,b)=>a+b,0);
+  let upperIdx=ganSum%8;if(upperIdx===0)upperIdx=8;upperIdx--;
+  let lowerIdx=zhiSum%8;if(lowerIdx===0)lowerIdx=8;lowerIdx--;
+  let dongYao=(ganSum+zhiSum)%6;if(dongYao===0)dongYao=6;
+  const upperName=GUA_NAMES_SINGLE[upperIdx];
+  const lowerName=GUA_NAMES_SINGLE[lowerIdx];
+  const hexagramName=GUA_NAMES_MAP[upperIdx][lowerIdx];
+  const ci=GUA_CI[hexagramName]||'';
+  return{upperIdx,lowerIdx,upperName,lowerName,dongYao,hexagramName,ci,
+    houtianUpper:HOU_BAGUA_NUMS[upperIdx],houtianLower:HOU_BAGUA_NUMS[lowerIdx],
+    ganSum,zhiSum,xianTianShu:(upperIdx+1)*10+(lowerIdx+1)};
+}
+
+// ═══════════════════════════════════════════
+//  HETU & LUOSHU (河图洛书)
+// ═══════════════════════════════════════════
+function getGanWuxing(gan){return Math.floor(gan/2)}
+
+function calcHeltu(bagua,sizhu){
+  const dayGanWX=getGanWuxing(sizhu.dayGZ.gan);
+  const heTuNums=HE_TU[dayGanWX];
+  const luoShuUpper=LUO_SHU[bagua.upperIdx%9];
+  const luoShuLower=LUO_SHU[bagua.lowerIdx%9];
+  const baseNum=bagua.xianTianShu*100+luoShuUpper*10+luoShuLower;
+  const tiaowenBase=baseNum%1000;
+  const wxCount=[0,0,0,0,0];
+  [sizhu.yearGZ,sizhu.monthGZ,sizhu.dayGZ,sizhu.hourGZ].forEach((gz,i)=>{
+    const wx=getGanWuxing(gz.gan);
+    const w=i===1?3:i===2?2:1;
+    wxCount[wx]+=w;
+  });
+  [sizhu.yearGZ.zhi,sizhu.monthGZ.zhi,sizhu.dayGZ.zhi,sizhu.hourGZ.zhi].forEach((zhi,i)=>{
+    const cgWx=CANGGAN_TABLE[zhi].map(g=>getGanWuxing(TIAN_GAN.indexOf(g)));
+    const w=i===1?2:1;
+    cgWx.forEach(wx=>{wxCount[wx]+=w});
+  });
+  return{heTuNums,heTuWX:dayGanWX,luoShuGrid:LUO_SHU,luoShuUpper,luoShuLower,
+    tiaowenRange:{min:Math.max(1,tiaowenBase-50),max:Math.min(999,tiaowenBase+50),base:tiaowenBase},
+    tiaowenBase,wxCount};
+}
+
+// ═══════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ═══════════════════════════════════════════
+function renderSizhu(){
+  const{yearGZ,monthGZ,dayGZ,hourGZ,nayin,canggan}=paipanResult;
+  const ps=[{l:'年柱',gz:yearGZ,n:nayin[0],c:canggan[0]},{l:'月柱',gz:monthGZ,n:nayin[1],c:canggan[1]},{l:'日柱',gz:dayGZ,n:nayin[2],c:canggan[2]},{l:'时柱',gz:hourGZ,n:nayin[3],c:canggan[3]}];
+  let h='';
+  ps.forEach(p=>{h+=`<div class="pillar-box"><div class="label">${p.l}</div><div class="gan">${p.gz.ganName}</div><div class="zhi">${p.gz.zhiName}</div><div class="nayin">${p.n}</div><div class="canggan">藏${p.c}</div></div>`});
+  document.getElementById('sizhuContent').innerHTML=h;
+}
+
+function renderBagua(){
+  const bagua=calcBagua(paipanResult);
+  paipanResult.bagua=bagua;
+  const{upperIdx,lowerIdx,upperName,lowerName,dongYao,hexagramName,ci,houtianUpper,houtianLower,xianTianShu}=bagua;
+  const uYao=GUA_YAO_MAP[upperName]||[1,1,1,1,1,1];
+  const lYao=GUA_YAO_MAP[lowerName]||[0,0,0,0,0,0];
+  let hexH='<div style="display:flex;justify-content:center"><div>';
+  for(let i=5;i>=0;i--){
+    const yao=i>=3?uYao[i-3]:lYao[i];
+    const isDong=(i+1)===dongYao;
+    const cls=yao===1?'yao':'yao broken';
+    const st=isDong?'background:var(--red)':'';
+    hexH+=`<div class="${cls}" style="${st}"></div>`;
+  }
+  hexH+='</div></div>';
+  let h='<div style="text-align:center">';
+  h+=`<div style="margin-bottom:12px"><span style="font-size:18px;font-weight:700">${hexagramName}</span><span style="font-size:12px;color:var(--text3);margin-left:8px">（${upperName}上${lowerName}下）</span></div>`;
+  h+=hexH;
+  h+=`<div style="margin-top:12px;font-size:13px;color:var(--text2);line-height:1.8">${ci}</div>`;
+  h+=`<div style="display:flex;justify-content:center;gap:20px;margin-top:12px;flex-wrap:wrap">`;
+  h+=`<div style="text-align:center"><div style="font-size:10px;color:var(--text3)">先天卦数</div><div style="font-size:20px;font-weight:700;color:var(--accent)">${xianTianShu}</div></div>`;
+  h+=`<div style="text-align:center"><div style="font-size:10px;color:var(--text3)">后天数</div><div style="font-size:20px;font-weight:700;color:var(--accent)">${houtianUpper}${houtianLower}</div></div>`;
+  h+=`<div style="text-align:center"><div style="font-size:10px;color:var(--text3)">动爻</div><div style="font-size:20px;font-weight:700;color:var(--red)">${dongYao}</div></div>`;
+  h+='</div></div>';
+  document.getElementById('baguaContent').innerHTML=h;
+}
+
+function renderHeltu(){
+  const heltu=calcHeltu(paipanResult.bagua,paipanResult);
+  paipanResult.heltu=heltu;
+  const{heTuNums,luoShuGrid,tiaowenRange,tiaowenBase}=heltu;
+  let h='<div style="text-align:center;margin-bottom:16px">';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:8px">洛书九宫</div>';
+  h+='<div class="luoshu-grid">';
+  for(let i=0;i<9;i++)h+=`<div class="luoshu-cell${i===4?' center':''}">${luoShuGrid[i]}</div>`;
+  h+='</div></div>';
+  h+=`<div style="text-align:center;margin-bottom:12px"><div style="font-size:12px;color:var(--text3);margin-bottom:8px">河图数理</div><div style="font-size:20px;font-weight:700;color:var(--accent)">${heTuNums[0]} · ${heTuNums[1]}</div></div>`;
+  h+=`<div style="text-align:center"><div style="font-size:12px;color:var(--text3);margin-bottom:4px">条文基数</div><div style="font-size:24px;font-weight:700">${tiaowenBase}</div><div style="font-size:11px;color:var(--text3);margin-top:4px">范围: ${tiaowenRange.min} - ${tiaowenRange.max}</div></div>`;
+  document.getElementById('heltuContent').innerHTML=h;
+}
+
+function renderWuxing(){
+  const{wxCount}=paipanResult.heltu;
+  const total=wxCount.reduce((a,b)=>a+b,0);
+  const maxWx=Math.max(...wxCount);
+  const maxIdx=wxCount.indexOf(maxWx);
+  const minIdx=wxCount.indexOf(Math.min(...wxCount));
+  let h='<div class="wx-bar">';
+  for(let i=0;i<5;i++){
+    const ht=maxWx>0?(wxCount[i]/maxWx*80):4;
+    h+=`<div class="wx-bar-item"><div class="wx-bar-value" style="color:${WUXING_COLORS[i]}">${wxCount[i]}</div><div class="wx-bar-fill" style="height:${ht}px;background:${WUXING_COLORS[i]}"></div><div class="wx-bar-label">${WU_XING[i]}</div></div>`;
+  }
+  h+='</div>';
+  h+=`<div style="text-align:center;margin:12px 0"><span style="font-size:12px;color:var(--text3)">最旺:</span><span style="font-size:14px;font-weight:700;color:${WUXING_COLORS[maxIdx]}">${WU_XING[maxIdx]}</span><span style="font-size:12px;color:var(--text3);margin-left:12px">最弱:</span><span style="font-size:14px;font-weight:700;color:${WUXING_COLORS[minIdx]}">${WU_XING[minIdx]}</span></div>`;
+  const shengC=[];const keC=[];
+  for(let i=0;i<5;i++){if(wxCount[i]>0&&wxCount[SHENG[i]]>0)shengC.push(WU_XING[i]+'生'+WU_XING[SHENG[i]]);if(wxCount[i]>0&&wxCount[KE[i]]>0)keC.push(WU_XING[i]+'克'+WU_XING[KE[i]])}
+  h+=`<div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:8px">`;
+  if(shengC.length)h+=`<div style="font-size:11px;color:var(--green)">相生: ${shengC.join('、')}</div>`;
+  if(keC.length)h+=`<div style="font-size:11px;color:var(--red)">相克: ${keC.join('、')}</div>`;
+  h+='</div>';
+  const{yearGZ,monthGZ,dayGZ}=paipanResult;
+  const lq=[ZHI_WX[yearGZ.zhi]%6,ZHI_WX[monthGZ.zhi]%6,ZHI_WX[dayGZ.zhi]%6];
+  h+=`<div style="text-align:center;margin-top:12px"><div style="font-size:12px;color:var(--text3);margin-bottom:4px">六气</div><div style="font-size:13px"><span style="color:var(--red)">司天: ${LIU_QI[lq[0]]}</span><span style="color:var(--text3);margin:0 8px">·</span><span style="color:var(--accent)">主气: ${LIU_QI[lq[1]]}</span><span style="color:var(--text3);margin:0 8px">·</span><span style="color:var(--green)">客气: ${LIU_QI[lq[2]]}</span></div></div>`;
+  document.getElementById('wuxingContent').innerHTML=h;
+}
+
+// ═══════════════════════════════════════════
+//  条文系统 (200条核心条文)
+// ═══════════════════════════════════════════
+const TIAOWEN_CATEGORIES=['父亲','母亲','兄弟','本人排行','配偶','子女','性格','事业','健康'];
+
+function matchCondition(cond,sizhu,bagua,heltu){
+  let score=0,maxS=0;
+  for(const[key,vals]of Object.entries(cond)){
+    maxS+=10;let ok=false;
+    switch(key){
+      case'yearGan':ok=vals.includes(sizhu.yearGZ.gan);break;
+      case'yearZhi':ok=vals.includes(sizhu.yearGZ.zhi);break;
+      case'monthGan':ok=vals.includes(sizhu.monthGZ.gan);break;
+      case'monthZhi':ok=vals.includes(sizhu.monthGZ.zhi);break;
+      case'dayGan':ok=vals.includes(sizhu.dayGZ.gan);break;
+      case'dayZhi':ok=vals.includes(sizhu.dayGZ.zhi);break;
+      case'hourGan':ok=vals.includes(sizhu.hourGZ.gan);break;
+      case'hourZhi':ok=vals.includes(sizhu.hourGZ.zhi);break;
+      case'upperGua':ok=vals.includes(bagua.upperIdx);break;
+      case'lowerGua':ok=vals.includes(bagua.lowerIdx);break;
+      case'dongYao':ok=vals.includes(bagua.dongYao);break;
+      case'wxMax':ok=vals.includes(heltu.wxCount.indexOf(Math.max(...heltu.wxCount)));break;
+      case'wxMin':ok=vals.includes(heltu.wxCount.indexOf(Math.min(...heltu.wxCount)));break;
+      case'ganWX':ok=vals.includes(getGanWuxing(sizhu.dayGZ.gan));break;
+      default:maxS-=10;
+    }
+    if(ok)score+=10;
+  }
+  return maxS>0?score/maxS:0;
+}
+
+function filterTiaowen(sizhu,bagua,heltu){
+  const scored=TIAOWEN.map(tw=>({...tw,score:matchCondition(tw.conditions,sizhu,bagua,heltu)}));
+  const grouped={};
+  for(const cat of TIAOWEN_CATEGORIES){
+    grouped[cat]=scored.filter(tw=>tw.category===cat&&tw.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
+    // If fewer than 2 matches, add top-scored regardless
+    if(grouped[cat].length<2){
+      const extras=scored.filter(tw=>tw.category===cat).sort((a,b)=>b.score-a.score).slice(0,3);
+      grouped[cat]=extras;
+    }
+  }
+  return grouped;
+}
+
+// 200条核心条文
+const TIAOWEN=(()=>{
+  const tw=[];
+  let id=1;
+  // 父亲生肖 (12条)
+  for(let z=0;z<12;z++){
+    tw.push({id:id++,category:'父亲',text:'父亲生肖属'+DI_ZHI[z],conditions:{yearZhi:[z]},options:{type:'zodiac',value:z}});
+  }
+  // 父亲排行 (4条)
+  tw.push({id:id++,category:'父亲',text:'父亲排行老大',conditions:{yearGan:[0,1,2]},options:{type:'rank',value:1}});
+  tw.push({id:id++,category:'父亲',text:'父亲排行老二',conditions:{yearGan:[3,4,5]},options:{type:'rank',value:2}});
+  tw.push({id:id++,category:'父亲',text:'父亲排行老三',conditions:{yearGan:[6,7]},options:{type:'rank',value:3}});
+  tw.push({id:id++,category:'父亲',text:'父亲独子',conditions:{yearGan:[8,9]},options:{type:'rank',value:0}});
+  // 父亲状况 (8条)
+  tw.push({id:id++,category:'父亲',text:'父亲为人正直',conditions:{yearGan:[0,4],upperGua:[0,4]}});
+  tw.push({id:id++,category:'父亲',text:'父亲性格刚强',conditions:{yearGan:[1,5],upperGua:[1,5]}});
+  tw.push({id:id++,category:'父亲',text:'父亲早年离家',conditions:{yearZhi:[0,6],dongYao:[1,4]}});
+  tw.push({id:id++,category:'父亲',text:'父亲有手艺',conditions:{yearZhi:[2,8],monthGan:[2,3]}});
+  tw.push({id:id++,category:'父亲',text:'父亲从商',conditions:{yearZhi:[4,10],dayGan:[4,5]}});
+  tw.push({id:id++,category:'父亲',text:'父亲务农',conditions:{yearZhi:[1,7],monthZhi:[1,7]}});
+  tw.push({id:id++,category:'父亲',text:'父亲有官职',conditions:{yearGan:[6,7],upperGua:[0,1]}});
+  tw.push({id:id++,category:'父亲',text:'父亲身体健朗',conditions:{yearZhi:[3,9],wxMax:[0,1]}});
+
+  // 母亲生肖 (12条)
+  for(let z=0;z<12;z++){
+    tw.push({id:id++,category:'母亲',text:'母亲生肖属'+DI_ZHI[z],conditions:{monthZhi:[z]},options:{type:'zodiac',value:z}});
+  }
+  // 母亲排行 (4条)
+  tw.push({id:id++,category:'母亲',text:'母亲排行老大',conditions:{monthGan:[0,1,2]},options:{type:'rank',value:1}});
+  tw.push({id:id++,category:'母亲',text:'母亲排行老二',conditions:{monthGan:[3,4,5]},options:{type:'rank',value:2}});
+  tw.push({id:id++,category:'母亲',text:'母亲排行老三',conditions:{monthGan:[6,7]},options:{type:'rank',value:3}});
+  tw.push({id:id++,category:'母亲',text:'母亲独女',conditions:{monthGan:[8,9]},options:{type:'rank',value:0}});
+  // 母亲状况 (8条)
+  tw.push({id:id++,category:'母亲',text:'母亲贤惠持家',conditions:{monthGan:[1,3],lowerGua:[3,7]}});
+  tw.push({id:id++,category:'母亲',text:'母亲心灵手巧',conditions:{monthGan:[2,6],lowerGua:[2,4]}});
+  tw.push({id:id++,category:'母亲',text:'母亲出身书香',conditions:{monthZhi:[2,8],dayGan:[0,1]}});
+  tw.push({id:id++,category:'母亲',text:'母亲勤劳',conditions:{monthZhi:[1,7],wxMax:[2]}});
+  tw.push({id:id++,category:'母亲',text:'母亲早年辛苦',conditions:{monthZhi:[0,6],dongYao:[2,5]}});
+  tw.push({id:id++,category:'母亲',text:'母亲晚年享福',conditions:{monthGan:[4,5],hourGan:[8,9]}});
+  tw.push({id:id++,category:'母亲',text:'母亲善交际',conditions:{monthZhi:[3,9],upperGua:[1,7]}});
+  tw.push({id:id++,category:'母亲',text:'母亲身体安康',conditions:{monthZhi:[5,11],wxMin:[3,4]}});
+
+  // 兄弟姐妹 (12条)
+  tw.push({id:id++,category:'兄弟',text:'独子',conditions:{upperGua:[0,7],dongYao:[1]},options:{type:'count',value:1}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟二人',conditions:{upperGua:[0,1],dongYao:[1,2]},options:{type:'count',value:2}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟三人',conditions:{upperGua:[2,3],dongYao:[3,4]},options:{type:'count',value:3}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟四人',conditions:{upperGua:[4,5],dongYao:[2,5]},options:{type:'count',value:4}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟五人',conditions:{upperGua:[6,7],dongYao:[1,6]},options:{type:'count',value:5}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟六人',conditions:{upperGua:[0,2],dongYao:[3,6]},options:{type:'count',value:6}});
+  tw.push({id:id++,category:'兄弟',text:'姐妹多于兄弟',conditions:{lowerGua:[1,5],dayGan:[1,3,5]}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟和睦',conditions:{upperGua:[0,3],wxMax:[0]}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟各奔东西',conditions:{upperGua:[4,7],dongYao:[4,5,6]}});
+  tw.push({id:id++,category:'兄弟',text:'有同母异父之兄弟',conditions:{monthZhi:[0,6],dayZhi:[4,10]}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟有出息',conditions:{upperGua:[0,1],wxMax:[3]}});
+  tw.push({id:id++,category:'兄弟',text:'兄弟中有人从政',conditions:{upperGua:[0,6],dayGan:[6,7]}});
+
+  // 本人排行 (8条)
+  tw.push({id:id++,category:'本人排行',text:'排行老大',conditions:{lowerGua:[0,1],dayGan:[0,1,2,3]},options:{type:'rank',value:1}});
+  tw.push({id:id++,category:'本人排行',text:'排行老二',conditions:{lowerGua:[2,3],dayGan:[4,5]},options:{type:'rank',value:2}});
+  tw.push({id:id++,category:'本人排行',text:'排行老三',conditions:{lowerGua:[4,5],dayGan:[6,7]},options:{type:'rank',value:3}});
+  tw.push({id:id++,category:'本人排行',text:'排行老四',conditions:{lowerGua:[6,7],dayGan:[8,9]},options:{type:'rank',value:4}});
+  tw.push({id:id++,category:'本人排行',text:'排行最小',conditions:{dongYao:[5,6],hourGan:[8,9]},options:{type:'rank',value:99}});
+  tw.push({id:id++,category:'本人排行',text:'独子',conditions:{dongYao:[1],lowerGua:[0,7]},options:{type:'rank',value:1}});
+  tw.push({id:id++,category:'本人排行',text:'排行居中',conditions:{dongYao:[3],lowerGua:[2,5]},options:{type:'rank',value:3}});
+  tw.push({id:id++,category:'本人排行',text:'上有兄姐',conditions:{dongYao:[2,4],dayZhi:[2,8]}});
+
+  // 配偶生肖 (12条)
+  for(let z=0;z<12;z++){
+    tw.push({id:id++,category:'配偶',text:'配偶生肖属'+DI_ZHI[z],conditions:{dayZhi:[z]},options:{type:'zodiac',value:z}});
+  }
+  // 配偶性格 (6条)
+  tw.push({id:id++,category:'配偶',text:'配偶性格温柔',conditions:{dayGan:[1,3],lowerGua:[1,5]}});
+  tw.push({id:id++,category:'配偶',text:'配偶性格刚强',conditions:{dayGan:[0,6],lowerGua:[0,3]}});
+  tw.push({id:id++,category:'配偶',text:'配偶聪明能干',conditions:{dayGan:[2,8],lowerGua:[2,4]}});
+  tw.push({id:id++,category:'配偶',text:'配偶贤惠顾家',conditions:{dayGan:[4,5],lowerGua:[6,7]}});
+  tw.push({id:id++,category:'配偶',text:'配偶长相出众',conditions:{dayZhi:[3,9],hourGan:[0,1]}});
+  tw.push({id:id++,category:'配偶',text:'配偶家境殷实',conditions:{dayZhi:[4,10],wxMax:[2,3]}});
+  // 配偶远近 (4条)
+  tw.push({id:id++,category:'配偶',text:'配偶为近邻或同乡',conditions:{dayZhi:[0,1,2],monthZhi:[0,1,2]}});
+  tw.push({id:id++,category:'配偶',text:'配偶为远方之人',conditions:{dayZhi:[6,7,8],monthZhi:[6,7,8]}});
+  tw.push({id:id++,category:'配偶',text:'配偶为同学或同事',conditions:{dayGan:[0,1],monthGan:[0,1]}});
+  tw.push({id:id++,category:'配偶',text:'配偶经人介绍认识',conditions:{dayZhi:[3,4,5],hourZhi:[3,4,5]}});
+
+  // 子女 (12条)
+  tw.push({id:id++,category:'子女',text:'子女二人，一男一女',conditions:{dongYao:[2,4],lowerGua:[0,2]},options:{type:'children',value:'1m1f'}});
+  tw.push({id:id++,category:'子女',text:'子女三人',conditions:{dongYao:[3,5],lowerGua:[1,6]},options:{type:'children',value:'3'}});
+  tw.push({id:id++,category:'子女',text:'独生子女',conditions:{dongYao:[1],lowerGua:[4,7]},options:{type:'children',value:'1'}});
+  tw.push({id:id++,category:'子女',text:'子女二人',conditions:{dongYao:[2,6],lowerGua:[3,5]},options:{type:'children',value:'2'}});
+  tw.push({id:id++,category:'子女',text:'子女四人',conditions:{dongYao:[4],lowerGua:[0,3]},options:{type:'children',value:'4'}});
+  tw.push({id:id++,category:'子女',text:'头胎生女',conditions:{hourGan:[1,3,5],lowerGua:[1,5]}});
+  tw.push({id:id++,category:'子女',text:'头胎生男',conditions:{hourGan:[0,2,4],lowerGua:[0,3]}});
+  tw.push({id:id++,category:'子女',text:'子女有出息',conditions:{hourGan:[6,7],wxMax:[0,3]}});
+  tw.push({id:id++,category:'子女',text:'子女孝顺',conditions:{hourZhi:[3,9],lowerGua:[2,7]}});
+  tw.push({id:id++,category:'子女',text:'子女远行',conditions:{hourZhi:[6,7,8],dongYao:[5,6]}});
+  tw.push({id:id++,category:'子女',text:'晚年得子',conditions:{hourGan:[8,9],dongYao:[6]}});
+  tw.push({id:id++,category:'子女',text:'子女缘薄',conditions:{hourZhi:[0,6],wxMin:[1]}});
+
+  // 性格 (20条)
+  tw.push({id:id++,category:'性格',text:'性格刚毅果断',conditions:{dayGan:[0,1],ganWX:[0]}});
+  tw.push({id:id++,category:'性格',text:'热情开朗，乐于助人',conditions:{dayGan:[2,3],ganWX:[1]}});
+  tw.push({id:id++,category:'性格',text:'稳重踏实，脚踏实地',conditions:{dayGan:[4,5],ganWX:[2]}});
+  tw.push({id:id++,category:'性格',text:'义气深重，讲信用',conditions:{dayGan:[6,7],ganWX:[3]}});
+  tw.push({id:id++,category:'性格',text:'聪明灵活，善于变通',conditions:{dayGan:[8,9],ganWX:[4]}});
+  tw.push({id:id++,category:'性格',text:'内心细腻，多愁善感',conditions:{dayZhi:[0,1],hourGan:[1,3]}});
+  tw.push({id:id++,category:'性格',text:'志向远大，不甘平凡',conditions:{dayZhi:[2,8],upperGua:[0,1]}});
+  tw.push({id:id++,category:'性格',text:'性格内敛，不善言辞',conditions:{dayZhi:[4,10],lowerGua:[5,6]}});
+  tw.push({id:id++,category:'性格',text:'为人正直，嫉恶如仇',conditions:{dayGan:[0,6],wxMax:[0,3]}});
+  tw.push({id:id++,category:'性格',text:'心地善良，慈悲为怀',conditions:{dayGan:[1,3],wxMin:[4]}});
+  tw.push({id:id++,category:'性格',text:'好强不服输',conditions:{dayZhi:[3,9],dongYao:[1,3]}});
+  tw.push({id:id++,category:'性格',text:'做事有魄力',conditions:{dayGan:[6,7],upperGua:[0,3]}});
+  tw.push({id:id++,category:'性格',text:'善于理财',conditions:{dayGan:[4,5],wxMax:[2,3]}});
+  tw.push({id:id++,category:'性格',text:'喜欢自由，不受拘束',conditions:{dayZhi:[6,7],lowerGua:[4,5]}});
+  tw.push({id:id++,category:'性格',text:'有艺术天赋',conditions:{dayGan:[2,8],hourZhi:[3,9]}});
+  tw.push({id:id++,category:'性格',text:'重感情，讲义气',conditions:{dayZhi:[2,3],hourGan:[2,3]}});
+  tw.push({id:id++,category:'性格',text:'做事谨慎小心',conditions:{dayZhi:[5,11],dongYao:[2,5]}});
+  tw.push({id:id++,category:'性格',text:'有领导才能',conditions:{dayGan:[0,4],upperGua:[0,6]}});
+  tw.push({id:id++,category:'性格',text:'性格固执',conditions:{dayZhi:[1,7],wxMax:[2]}});
+  tw.push({id:id++,category:'性格',text:'人缘好，贵人多',conditions:{dayZhi:[3,9],hourZhi:[0,6]}});
+
+  // 事业 (12条)
+  tw.push({id:id++,category:'事业',text:'适合文职工作',conditions:{ganWX:[0,1],monthZhi:[2,3,4]}});
+  tw.push({id:id++,category:'事业',text:'适合经商',conditions:{ganWX:[3,4],monthZhi:[4,10]}});
+  tw.push({id:id++,category:'事业',text:'适合技术行业',conditions:{ganWX:[0,3],dayZhi:[2,8]}});
+  tw.push({id:id++,category:'事业',text:'适合从政',conditions:{ganWX:[2,3],upperGua:[0,6]}});
+  tw.push({id:id++,category:'事业',text:'适合教育行业',conditions:{ganWX:[0,1],lowerGua:[2,4]}});
+  tw.push({id:id++,category:'事业',text:'适合医疗行业',conditions:{ganWX:[1,4],lowerGua:[5,6]}});
+  tw.push({id:id++,category:'事业',text:'适合军警行业',conditions:{ganWX:[3],dayZhi:[0,6]}});
+  tw.push({id:id++,category:'事业',text:'适合艺术行业',conditions:{ganWX:[1,4],hourZhi:[3,9]}});
+  tw.push({id:id++,category:'事业',text:'早年事业多波折',conditions:{monthZhi:[0,6],dongYao:[1,2]}});
+  tw.push({id:id++,category:'事业',text:'中年后事业有成',conditions:{dayZhi:[4,10],wxMax:[2,3]}});
+  tw.push({id:id++,category:'事业',text:'贵人相助',conditions:{dayZhi:[3,9],hourGan:[4,5]}});
+  tw.push({id:id++,category:'事业',text:'适合自主创业',conditions:{dayGan:[0,6],dongYao:[1,4]}});
+
+  // 健康 (8条)
+  tw.push({id:id++,category:'健康',text:'注意肝胆健康',conditions:{wxMin:[0],ganWX:[0]}});
+  tw.push({id:id++,category:'健康',text:'注意心脏血管',conditions:{wxMin:[1],ganWX:[1]}});
+  tw.push({id:id++,category:'健康',text:'注意脾胃消化',conditions:{wxMin:[2],ganWX:[2]}});
+  tw.push({id:id++,category:'健康',text:'注意呼吸系统',conditions:{wxMin:[3],ganWX:[3]}});
+  tw.push({id:id++,category:'健康',text:'注意肾脏泌尿',conditions:{wxMin:[4],ganWX:[4]}});
+  tw.push({id:id++,category:'健康',text:'身体底子好',conditions:{wxMax:[2],dayZhi:[1,7]}});
+  tw.push({id:id++,category:'健康',text:'中年注意养生',conditions:{dayZhi:[4,10],dongYao:[3,4]}});
+  tw.push({id:id++,category:'健康',text:'晚年身体安康',conditions:{hourZhi:[3,9],wxMax:[0,2]}});
+
+  return tw;
+})();
+
+// ═══════════════════════════════════════════
+//  大运计算
+// ═══════════════════════════════════════════
+function calcDayun(sizhu, gender){
+  const{yearGZ,monthGZ,dayGZ}=sizhu;
+  const dayGan=dayGZ.gan;
+  const yearGan=yearGZ.gan;
+
+  // 判断大运顺逆：阳年男顺行，阴年男逆行；阳年女逆行，阴年女顺行
+  const isYangYear = yearGan % 2 === 0; // 甲丙戊庚壬为阳
+  const isMale = gender === 'male';
+  const forward = (isYangYear && isMale) || (!isYangYear && !isMale);
+
+  // 大运起始：月柱顺逆
+  const dayunList = [];
+  const monthGan = monthGZ.gan;
+  const monthZhi = monthGZ.zhi;
+
+  for(let i = 1; i <= 8; i++){
+    const gan = forward ? (monthGan + i) % 10 : (monthGan - i + 10) % 10;
+    const zhi = forward ? (monthZhi + i) % 12 : (monthZhi - i + 12) % 12;
+    dayunList.push({
+      gan, zhi,
+      ganName: TIAN_GAN[gan],
+      zhiName: DI_ZHI[zhi],
+      age: i * 10 // 简化：每10年一步大运
+    });
+  }
+
+  return {forward, dayunList};
+}
+
+// ═══════════════════════════════════════════
+//  批命书生成（深度推算）
+// ═══════════════════════════════════════════
+function generateReading(){
+  const{yearGZ,monthGZ,dayGZ,hourGZ,nayin,canggan,bagua,heltu}=paipanResult;
+  const sizhu={yearGZ,monthGZ,dayGZ,hourGZ};
+  const dayWX=getGanWuxing(dayGZ.gan);
+  const wxCount=heltu.wxCount;
+  const maxIdx=wxCount.indexOf(Math.max(...wxCount));
+  const minIdx=wxCount.indexOf(Math.min(...wxCount));
+  const gender=paipanResult.gender;
+
+  // 十神分析
+  const shishenList=[];
+  const pillars=[{label:'年柱',gz:yearGZ},{label:'月柱',gz:monthGZ},{label:'日柱',gz:dayGZ},{label:'时柱',gz:hourGZ}];
+  pillars.forEach(p=>{
+    const ss=getShishen(dayGZ.gan, p.gz.gan);
+    shishenList.push({...p, shishen: ss, shishenName: SHISHEN_NAMES[ss]});
+  });
+
+  // 神煞
+  const shensha=calcShensha(sizhu);
+
+  // 格局
+  const geju=judgeGeju(sizhu, wxCount);
+
+  // 大运
+  const dayun=calcDayun(sizhu, gender);
+
+  // 条文匹配
+  const predictions=filterTiaowen(sizhu,bagua,heltu);
+
+  const sec=document.getElementById('resultSection');
+  sec.style.display='block';
+
+  let h=`<div class="result-section"><h3>铁板神数批命书</h3>`;
+
+  // ═══ 四柱八字 ═══
+  h+=`<div class="result-item"><h4>一、四柱八字</h4>`;
+  h+=`<p><strong>年柱：</strong>${yearGZ.ganName}${yearGZ.zhiName}（${nayin[0]}）· 藏干${canggan[0]}</p>`;
+  h+=`<p><strong>月柱：</strong>${monthGZ.ganName}${monthGZ.zhiName}（${nayin[1]}）· 藏干${canggan[1]}</p>`;
+  h+=`<p><strong>日柱：</strong>${dayGZ.ganName}${dayGZ.zhiName}（${nayin[2]}）· 藏干${canggan[2]}</p>`;
+  h+=`<p><strong>时柱：</strong>${hourGZ.ganName}${hourGZ.zhiName}（${nayin[3]}）· 藏干${canggan[3]}</p>`;
+  h+=`<p><strong>日主：</strong>${dayGZ.ganName}${dayGZ.zhiName}（${WU_XING[dayWX]}命）</p>`;
+  h+=`</div>`;
+
+  // ═══ 十神分析 ═══
+  h+=`<div class="result-item"><h4>二、十神分析</h4>`;
+  shishenList.forEach(p=>{
+    h+=`<p><strong>${p.label}：</strong>${p.gz.ganName}${p.gz.zhiName} → ${p.shishenName}（${SHISHEN_MEANINGS[p.shishen].desc}）</p>`;
+  });
+  // 统计十神分布
+  const ssCount=new Array(10).fill(0);
+  shishenList.forEach(p=>ssCount[p.shishen]++);
+  const ssMain=[];
+  ssCount.forEach((c,i)=>{if(c>0)ssMain.push({name:SHISHEN_NAMES[i],count:c,desc:SHISHEN_MEANINGS[i].desc})});
+  ssMain.sort((a,b)=>b.count-a.count);
+  h+=`<p style="margin-top:8px"><strong>十神分布：</strong>${ssMain.map(s=>`${s.name}×${s.count}`).join('、')}</p>`;
+  h+=`</div>`;
+
+  // ═══ 格局 ═══
+  h+=`<div class="result-item"><h4>三、格局判断</h4>`;
+  h+=`<p><strong>格局：</strong>${geju.geju}</p>`;
+  h+=`<p>${geju.gejuDesc}</p>`;
+  h+=`<p>日主${WU_XING[dayWX]}命，${geju.dayWxRatio>0.3?'身旺':geju.dayWxRatio<0.15?'身弱':'身中和'}，五行${WU_XING[geju.maxWX]}最旺，${WU_XING[geju.minWX]}最弱。</p>`;
+  h+=`</div>`;
+
+  // ═══ 神煞 ═══
+  if(shensha.length>0){
+    h+=`<div class="result-item"><h4>四、神煞</h4>`;
+    shensha.forEach(s=>{h+=`<p>· ${s}</p>`});
+    if(shensha.some(s=>s.includes('天乙贵人')))h+=`<p>天乙贵人入命，一生贵人运旺，遇难呈祥。</p>`;
+    if(shensha.some(s=>s.includes('文昌')))h+=`<p>文昌入命，聪慧好学，利考试功名。</p>`;
+    if(shensha.some(s=>s.includes('驿马')))h+=`<p>驿马入命，一生多走动奔波，利外出发展。</p>`;
+    if(shensha.some(s=>s.includes('桃花')))h+=`<p>桃花入命，人缘佳，异性缘旺，需注意感情纠纷。</p>`;
+    if(shensha.some(s=>s.includes('华盖')))h+=`<p>华盖入命，聪明好学，喜独处研究，有宗教缘。</p>`;
+    if(shensha.some(s=>s.includes('羊刃')))h+=`<p>羊刃入命，性格刚烈，宜武职或技术行业。</p>`;
+    if(shensha.some(s=>s.includes('禄神')))h+=`<p>禄神入命，衣食无忧，有福有禄。</p>`;
+    h+=`</div>`;
+  }
+
+  // ═══ 卦象 ═══
+  h+=`<div class="result-item"><h4>${shensha.length>0?'五':'四'}、卦象</h4>`;
+  h+=`<p><strong>${bagua.hexagramName}</strong>（${bagua.upperName}上${bagua.lowerName}下）· 动爻第${bagua.dongYao}爻</p>`;
+  h+=`<p style="font-size:12px;color:var(--text3)">${bagua.ci}</p>`;
+  h+=`<p>先天卦数${bagua.xianTianShu}，后天数${bagua.houtianUpper}${bagua.houtianLower}。</p>`;
+  h+=`</div>`;
+
+  // ═══ 性格详批 ═══
+  h+=`<div class="result-item"><h4>${shensha.length>0?'六':'五'}、性格详批</h4>`;
+  const dayGanChar=dayGZ.ganName;
+  // 日干性格
+  const ganXingGe={
+    '甲':'甲木参天，正直不屈，有领导才能，但有时过于固执。为人光明磊落，不喜阿谀奉承。',
+    '乙':'乙木柔韧，善于变通，外表温和内心坚韧。人缘好，善解人意，但有时优柔寡断。',
+    '丙':'丙火热烈，热情开朗，积极向上，有感染力。但性急，容易冲动，做事虎头蛇尾。',
+    '丁':'丁火内敛，心思细腻，有艺术天赋。外柔内刚，执着认真，但有时过于敏感。',
+    '戊':'戊土厚重，稳重踏实，诚实守信，有包容心。但反应较慢，有时过于保守。',
+    '己':'己土谦卑，低调内敛，善于协调，有奉献精神。但有时过于自卑，缺乏主见。',
+    '庚':'庚金刚毅，果断决绝，讲义气，有魄力。但性刚易折，有时过于严厉。',
+    '辛':'辛金精致，品味高雅，追求完美，有艺术气质。但有时过于挑剔，心胸不够宽广。',
+    '壬':'壬水智慧，聪明灵活，善于谋略，有远见。但有时过于圆滑，缺乏定性。',
+    '癸':'癸水柔情，敏感多情，直觉力强，有宗教缘。但有时过于悲观，容易多愁善感。'
+  };
+  h+=`<p><strong>日干性情：</strong>${ganXingGe[dayGanChar]||''}</p>`;
+
+  // 十神性格补充
+  if(ssMain.length>0){
+    const mainSS=ssMain[0];
+    h+=`<p><strong>命局特点：</strong>命带${mainSS.name}为主，${mainSS.name==='比肩'||mainSS.name==='劫财'?'性格独立自主，不甘人后，有竞争意识。':mainSS.name==='食神'||mainSS.name==='伤官'?'才华横溢，聪明过人，有艺术天赋，但性格叛逆。':mainSS.name==='正财'||mainSS.name==='偏财'?'务实理财，人缘好，有商业头脑。':mainSS.name==='正官'||mainSS.name==='七杀'?'有权威感，守规矩，有领导才能，但压力较大。':'有学问，喜研究，思维独特，有宗教或哲学倾向。'}</p>`;
+  }
+
+  // 地支性格
+  const zhiXingGe={
+    '子':'聪明机智，善于交际','丑':'沉稳踏实，任劳任怨','寅':'有魄力，敢于冒险',
+    '卯':'温和善良，人缘好','辰':'有抱负，不甘平凡','巳':'聪明灵活，善于谋略',
+    '午':'热情奔放，积极进取','未':'温顺善良，有耐心','申':'机智灵活，善于变通',
+    '酉':'精致高雅，追求完美','戌':'忠诚可靠，讲义气','亥':'心地善良，有包容心'
+  };
+  h+=`<p><strong>日支性情：</strong>${zhiXingGe[dayGZ.zhiName]||''}。</p>`;
+  h+=`</div>`;
+
+  // ═══ 六亲详批 ═══
+  h+=`<div class="result-item"><h4>${shensha.length>0?'七':'六'}、六亲详批</h4>`;
+
+  // 父亲
+  const fuQin=shishenList[0]; // 年柱代表父亲
+  h+=`<p><strong>父亲：</strong>年柱${yearGZ.ganName}${yearGZ.zhiName}，${SHISHEN_NAMES[getShishen(dayGZ.gan,yearGZ.gan)]}主事。`;
+  const fuQinDesc=predictions['父亲']||[];
+  if(fuQinDesc.length>0)h+=fuQinDesc[0].text+'。';
+  h+=`</p>`;
+
+  // 母亲
+  const muQin=shishenList[1]; // 月柱代表母亲
+  h+=`<p><strong>母亲：</strong>月柱${monthGZ.ganName}${monthGZ.zhiName}，${SHISHEN_NAMES[getShishen(dayGZ.gan,monthGZ.gan)]}主事。`;
+  const muQinDesc=predictions['母亲']||[];
+  if(muQinDesc.length>0)h+=muQinDesc[0].text+'。';
+  h+=`</p>`;
+
+  // 兄弟
+  const xiongDi=predictions['兄弟']||[];
+  if(xiongDi.length>0)h+=`<p><strong>兄弟姐妹：</strong>${xiongDi[0].text}。</p>`;
+
+  // 本人排行
+  const paiHang=predictions['本人排行']||[];
+  if(paiHang.length>0)h+=`<p><strong>本人排行：</strong>${paiHang[0].text}。</p>`;
+  h+=`</div>`;
+
+  // ═══ 婚姻详批 ═══
+  h+=`<div class="result-item"><h4>${shensha.length>0?'八':'七'}、婚姻详批</h4>`;
+  const peiOu=predictions['配偶']||[];
+  if(gender==='male'){
+    // 男命看正财为妻
+    h+=`<p>男命以正财为妻星，日支为夫妻宫。</p>`;
+    const zhengCai=ssCount[5];
+    h+=`<p>命局正财${zhengCai>0?'透出':'不透'}，${zhengCai>0?'婚姻较顺':'婚姻需注意经营'}。</p>`;
+  }else{
+    // 女命看正官为夫
+    h+=`<p>女命以正官为夫星，日支为夫妻宫。</p>`;
+    const zhengGuan=ssCount[7];
+    h+=`<p>命局正官${zhengGuan>0?'透出':'不透'}，${zhengGuan>0?'婚姻较顺':'婚姻需注意经营'}。</p>`;
+  }
+  peiOu.slice(0,2).forEach(p=>{h+=`<p>· ${p.text}</p>`});
+  if(shensha.some(s=>s.includes('桃花')))h+=`<p>桃花入命，异性缘旺，需注意把握分寸。</p>`;
+  h+=`</div>`;
+
+  // ═══ 子女详批 ═══
+  const ziNv=predictions['子女']||[];
+  if(ziNv.length>0){
+    h+=`<div class="result-item"><h4>${shensha.length>0?'九':'八'}、子女详批</h4>`;
+    ziNv.slice(0,2).forEach(p=>{h+=`<p>· ${p.text}</p>`});
+    h+=`</div>`;
+  }
+
+  // ═══ 事业详批 ═══
+  h+=`<div class="result-item"><h4>${shensha.length>0?ziNv.length>0?'十':'九':ziNv.length>0?'九':'八'}、事业详批</h4>`;
+  const shiYe=predictions['事业']||[];
+  // 根据十神推断适合行业
+  const hangYe=[];
+  if(ssCount[7]>0||ssCount[6]>0)hangYe.push('公务员、行政管理');
+  if(ssCount[9]>0||ssCount[8]>0)hangYe.push('教育、文化、宗教');
+  if(ssCount[2]>0||ssCount[3]>0)hangYe.push('艺术、技术、创意');
+  if(ssCount[4]>0||ssCount[5]>0)hangYe.push('商业、财务、销售');
+  if(ssCount[0]>0||ssCount[1]>0)hangYe.push('自由职业、合伙经营');
+  h+=`<p><strong>适合行业：</strong>${hangYe.length>0?hangYe.join('、'):'需结合具体八字分析'}。</p>`;
+  shiYe.slice(0,2).forEach(p=>{h+=`<p>· ${p.text}</p>`});
+
+  // 驿马与事业
+  if(shensha.some(s=>s.includes('驿马')))h+=`<p>驿马入命，事业多变动奔波，利外出发展或与外地打交道。</p>`;
+  if(shensha.some(s=>s.includes('文昌')))h+=`<p>文昌入命，利考试、文职、学术研究。</p>`;
+  h+=`</div>`;
+
+  // ═══ 健康详批 ═══
+  h+=`<div class="result-item"><h4>${shensha.length>0?ziNv.length>0?'十一':'十':ziNv.length>0?'十':'九'}、健康详批</h4>`;
+  const jianKang=predictions['健康']||[];
+  // 五行对应脏腑
+  const zangFu=['肝胆','心脏小肠','脾胃','肺大肠','肾膀胱'];
+  h+=`<p><strong>五行与健康：</strong></p>`;
+  h+=`<p>日主${WU_XING[dayWX]}命，${WU_XING[minWX]}弱，需注意${zangFu[minWX]}方面的问题。</p>`;
+  if(wxCount[3]>wxCount[1])h+=`<p>金旺木弱，需注意肝胆、筋骨方面。</p>`;
+  if(wxCount[1]>wxCount[3])h+=`<p>火旺金弱，需注意呼吸系统、皮肤方面。</p>`;
+  jianKang.slice(0,2).forEach(p=>{h+=`<p>· ${p.text}</p>`});
+  h+=`</div>`;
+
+  // ═══ 大运详批 ═══
+  h+=`<div class="result-item"><h4>${shensha.length>0?ziNv.length>0?'十二':'十一':ziNv.length>0?'十一':'十'}、大运详批</h4>`;
+  h+=`<p>日主${WU_XING[dayWX]}命，生于${DI_ZHI[monthGZ.zhi]}月，${geju.dayWxRatio>0.3?'身旺':geju.dayWxRatio<0.15?'身弱':'身中和'}。</p>`;
+  h+=`<p>大运${dayun.forward?'顺行':'逆行'}：</p>`;
+  dayun.dayunList.slice(0,5).forEach((d,i)=>{
+    const wx=getGanWuxing(d.gan);
+    const shishen=getShishen(dayGZ.gan, d.gan);
+    const isGood=(geju.dayWxRatio>0.3&&(wx===minIdx||wx===(dayWX+1)%5))||(geju.dayWxRatio<0.15&&(wx===dayWX||wx===(dayWX+4)%5));
+    h+=`<p>${d.age}岁（${d.ganName}${d.zhiName}）：${SHISHEN_NAMES[shishen]}运，${WU_XING[wx]}旺，${isGood?'吉利':'需注意'}。</p>`;
+  });
+  h+=`</div>`;
+
+  h+='</div>';
+  sec.innerHTML=h;
+  sec.scrollIntoView({behavior:'smooth'});
+  showToast('批命完成');
+}
+
+// ═══════════════════════════════════════════
+//  DO PAIPAN (主入口)
+// ═══════════════════════════════════════════
+function parseGanZhi(gzStr){
+  const ganIdx=TIAN_GAN.indexOf(gzStr[0]);
+  const zhiIdx=DI_ZHI.indexOf(gzStr[1]);
+  return{gan:ganIdx,zhi:zhiIdx,ganName:gzStr[0],zhiName:gzStr[1]};
+}
+
+// 早子时处理：日柱用当天，时干用下一天天干遁
+function getHourGan(dayGan, hourIdx){
+  if(hourIdx === 0){
+    // 早子时(23:00-00:00)：时干用下一天天干
+    return ((dayGan + 1) % 10 * 2 + hourIdx) % 10;
+  }
+  return (dayGan * 2 + hourIdx) % 10;
+}
+
+async function doPaipan(){
+  let result;
+  if(currentMode==='calendar'){
+    const year=parseInt(document.getElementById('selYear').value);
+    const month=parseInt(document.getElementById('selMonth').value);
+    const day=parseInt(document.getElementById('selDay').value);
+    const hourIdx=parseInt(document.getElementById('selHour').value);
+
+    try{
+      showToast('正在获取排盘数据...');
+      const resp=await fetch(`/api/sizhu?year=${year}&month=${month}&day=${day}`);
+      const data=await resp.json();
+      if(data.error){showToast('获取失败: '+data.error);return}
+      const yearGZ=parseGanZhi(data.yearGZ);
+      const monthGZ=parseGanZhi(data.monthGZ);
+      const dayGZ=parseGanZhi(data.dayGZ);
+      const hourGZ=calcHourPillar(dayGZ.gan,hourIdx);
+      result={
+        yearGZ,monthGZ,dayGZ,hourGZ,
+        nayin:[getNayin(yearGZ.gan,yearGZ.zhi),getNayin(monthGZ.gan,monthGZ.zhi),getNayin(dayGZ.gan,dayGZ.zhi),getNayin(hourGZ.gan,hourGZ.zhi)],
+        canggan:[getCanggan(yearGZ.zhi),getCanggan(monthGZ.zhi),getCanggan(dayGZ.zhi),getCanggan(hourGZ.zhi)]
+      };
+    }catch(e){
+      showToast('网络错误，使用本地计算');
+      result=calcSizhu(year,month,day,hourIdx);
+    }
+  }else{
+    const yg=parseInt(document.getElementById('gzYearGan').value);
+    const yz=parseInt(document.getElementById('gzYearZhi').value);
+    const mg=parseInt(document.getElementById('gzMonthGan').value);
+    const mz=parseInt(document.getElementById('gzMonthZhi').value);
+    const dg=parseInt(document.getElementById('gzDayGan').value);
+    const dz=parseInt(document.getElementById('gzDayZhi').value);
+    const hg=parseInt(document.getElementById('gzHourGan').value);
+    const hz=parseInt(document.getElementById('gzHourZhi').value);
+    result={
+      yearGZ:{gan:yg,zhi:yz,ganName:TIAN_GAN[yg],zhiName:DI_ZHI[yz]},
+      monthGZ:{gan:mg,zhi:mz,ganName:TIAN_GAN[mg],zhiName:DI_ZHI[mz]},
+      dayGZ:{gan:dg,zhi:dz,ganName:TIAN_GAN[dg],zhiName:DI_ZHI[dz]},
+      hourGZ:{gan:hg,zhi:hz,ganName:TIAN_GAN[hg],zhiName:DI_ZHI[hz]},
+      nayin:[getNayin(yg,yz),getNayin(mg,mz),getNayin(dg,dz),getNayin(hg,hz)],
+      canggan:[getCanggan(yz),getCanggan(mz),getCanggan(dz),getCanggan(hz)]
+    };
+  }
+  result.gender=document.querySelector('input[name="gender"]:checked').value;
+  paipanResult=result;
+  document.getElementById('chartSection').style.display='block';
+  renderSizhu();
+  renderBagua();
+  renderHeltu();
+  renderWuxing();
+  generateReading();
+  showToast('排盘完成');
+  document.getElementById('chartSection').scrollIntoView({behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+function initSelects(){
+  const sy=document.getElementById('selYear');
+  const sm=document.getElementById('selMonth');
+  const sd=document.getElementById('selDay');
+  const sh=document.getElementById('selHour');
+  for(let y=2030;y>=1940;y--)sy.innerHTML+=`<option value="${y}"${y===1990?' selected':''}>${y}</option>`;
+  for(let m=1;m<=12;m++)sm.innerHTML+=`<option value="${m}">${m}</option>`;
+  for(let d=1;d<=31;d++)sd.innerHTML+=`<option value="${d}">${d}</option>`;
+  const hn=['子(23-1)','丑(1-3)','寅(3-5)','卯(5-7)','辰(7-9)','巳(9-11)','午(11-13)','未(13-15)','申(15-17)','酉(17-19)','戌(19-21)','亥(21-23)'];
+  for(let h=0;h<12;h++)sh.innerHTML+=`<option value="${h}">${hn[h]}</option>`;
+  ['gzYearGan','gzMonthGan','gzDayGan','gzHourGan'].forEach(id=>{const el=document.getElementById(id);TIAN_GAN.forEach((g,i)=>{el.innerHTML+=`<option value="${i}">${g}</option>`})});
+  ['gzYearZhi','gzMonthZhi','gzDayZhi','gzHourZhi'].forEach(id=>{const el=document.getElementById(id);DI_ZHI.forEach((z,i)=>{el.innerHTML+=`<option value="${i}">${z}</option>`})});
+}
+
+document.getElementById('inputTabs').addEventListener('click',e=>{
+  const tab=e.target.closest('.tab');if(!tab)return;
+  document.querySelectorAll('#inputTabs .tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  currentMode=tab.dataset.mode;
+  document.getElementById('calendarInput').style.display=currentMode==='calendar'?'flex':'none';
+  document.getElementById('ganzhiInput').style.display=currentMode==='ganzhi'?'flex':'none';
+});
+
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),1500)}
+
+initSelects();
+</script>
+</body>
+</html>
