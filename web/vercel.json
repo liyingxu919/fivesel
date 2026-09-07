@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/lottery", "destination": "/lottery.html" },
+    { "source": "/suanming", "destination": "/suanming.html" }
+  ]
+}
